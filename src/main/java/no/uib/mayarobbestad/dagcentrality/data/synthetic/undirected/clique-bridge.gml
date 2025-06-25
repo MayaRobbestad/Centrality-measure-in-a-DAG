@@ -1,0 +1,58 @@
+graph [
+    directed 0
+    description "A graph with a clique of size 3 and a clique of size 4, where these cliques are connected through vertex 0"
+    node [
+        id 0
+    ]
+    node [
+        id 1
+    ]
+    node [
+        id 2
+    ]
+    node [
+        id 3
+    ]
+    node [
+        id 4
+    ]
+    node [
+        id 5
+    ]
+    edge [
+        source 0
+        target 1
+    ]
+    edge [
+        source 1
+        target 2
+    ]
+    edge [
+        source 2
+        target 3
+    ]
+    edge [
+        source 3
+        target 0
+    ]
+    edge [
+        source 0
+        target 2
+    ]
+    edge [
+        source 1
+        target 3
+    ]
+    edge [
+        source 0
+        target 4
+    ]
+    edge [
+        source 0
+        target 5
+    ]
+    edge [
+        source 4
+        target 5
+    ]
+]
