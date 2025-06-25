@@ -1,5 +1,7 @@
 graph [
    directed 1
+   n 282
+   m 893
    citation "Šubelj &amp; Bajec (2012). Software systems through complex networks science,\ Proc. of SoftwareMining 12,\ p. 9,\ http://dx.doi.org/10.1145/2384416.2384418, Šubelj &amp; Bajec (2011). Community structure of complex software systems,\ Physica A 390(16),\ 2968,\ http://dx.doi.org/10.1016/j.physa.2011.03.036, Šubelj et al. (2013). Group extraction for real-world networks,\ Proc. of NetSci 13,\ p. 152.,\ http://netsci2013.net/wordpress/wp-content/uploads/2013/05/booklet_NetSci_2013_forWeb_2.pdf, Šubelj &amp; Bajec (2012). Software systems through complex networks science,\ Proc. of SoftwareMining 12,\ p. 9,\ http://dx.doi.org/10.1145/2384416.2384418, Šubelj &amp; Bajec (2012). Clustering assortativity,\ communities and functional modules in real-world networks,\ pp. 21.,\ http://arxiv.org/abs/1202.3188, Šubelj et al. (2014). Node mixing and group structure of complex software networks,\ Advs. Complex Syst. 17(7),\ 1450022.,\ http://dx.doi.org/10.1142/S0219525914500222"
    description "Several networks of software dependencies. Nodes represent libraries and a directed edge denotes a library dependency on another.[^icon]&NewLine;[^icon]: Description obtained from the [ICON](https://icon.colorado.edu) project."
    name "software_dependencies (jmail)"

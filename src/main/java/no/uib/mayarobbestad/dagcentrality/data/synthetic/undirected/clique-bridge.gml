@@ -1,5 +1,7 @@
 graph [
     directed 0
+    n 6
+    m 9
     description "A graph with a clique of size 3 and a clique of size 4, where these cliques are connected through vertex 0"
     node [
         id 0

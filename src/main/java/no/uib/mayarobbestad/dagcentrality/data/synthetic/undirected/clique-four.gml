@@ -1,5 +1,7 @@
 graph [
     directed 0
+    n 4
+    m 6
     node [
         id 0
     ]
