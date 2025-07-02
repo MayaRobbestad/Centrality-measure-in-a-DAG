@@ -10,6 +10,7 @@ import org.jgrapht.alg.scoring.EigenvectorCentrality;
 import org.jgrapht.graph.DefaultEdge;
 
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
+import no.uib.mayarobbestad.dagcentrality.graph.GraphPrinter;
 
 public class Main {
 
@@ -33,14 +34,16 @@ public class Main {
         readAndStoreGraphs("data/synthetic/directed/", directedSyntheticData, directedSyntheticGraphs, true);
         readAndStoreGraphs("data/synthetic/undirected/", undirectedSyntheticData, undirectedSyntheticGraphs, false);
 
-        printGraphs(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
-        printGraphs(undirectedSynteticString, undirectedSyntheticData, undirectedSyntheticGraphs);
+        GraphPrinter.printGraphs(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
+        GraphPrinter.printGraphs(undirectedSynteticString, undirectedSyntheticData, undirectedSyntheticGraphs);
 
-        printBetweennessScores(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
-        printBetweennessScores(undirectedSynteticString, undirectedSyntheticData, undirectedSyntheticGraphs);
+        GraphPrinter.printBetweennessScores(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
+        GraphPrinter.printBetweennessScores(undirectedSynteticString, undirectedSyntheticData,
+                undirectedSyntheticGraphs);
 
-        printEigenvectorScores(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
-        printEigenvectorScores(undirectedSynteticString, undirectedSyntheticData, undirectedSyntheticGraphs);
+        GraphPrinter.printEigenvectorScores(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
+        GraphPrinter.printEigenvectorScores(undirectedSynteticString, undirectedSyntheticData,
+                undirectedSyntheticGraphs);
 
     }
 
@@ -64,48 +67,4 @@ public class Main {
         }
     }
 
-    public static void printGraphs(String name, ArrayList<String> input, Graph[] graphs) {
-        System.out.println("-----" + name + "-----");
-        for (int i = 0; i < input.size(); i++) {
-            String graphData = input.get(i);
-            System.out.println("Graph " + i + ": " + graphData);
-            System.out.println(graphs[i]);
-        }
-        System.out.println("-------------------------------------------------------");
-    }
-
-    /**
-     * 
-     * @param name
-     * @param input
-     * @param graphs
-     */
-    private static void printEigenvectorScores(String name, ArrayList<String> input, Graph[] graphs) {
-        System.out.println("-----Eigenvector centrality for" + name + "-----");
-        for (int i = 0; i < input.size(); i++) {
-            String graphData = input.get(i);
-            System.out.println("Graph " + i + ": " + graphData);
-            System.out.println(new EigenvectorCentrality<>(graphs[i]).getScores());
-        }
-        System.out.println("-------------------------------------------------------");
-    }
-
-    /**
-     * Prints out the normalized betweenness centrality score of the vertices in a
-     * directed or undirected graph.
-     * This betweenness centrality is based on Brandes algorithm.
-     * 
-     * @param name
-     * @param input
-     * @param graphs
-     */
-    private static void printBetweennessScores(String name, ArrayList<String> input, Graph[] graphs) {
-        System.out.println("-----" + name + "-----");
-        for (int i = 0; i < input.size(); i++) {
-            String graphData = input.get(i);
-            System.out.println("Graph " + i + ": " + graphData);
-            System.out.println(new BetweennessCentrality<>(graphs[i], true).getScores());
-        }
-        System.out.println("-------------------------------------------------------");
-    }
 }
