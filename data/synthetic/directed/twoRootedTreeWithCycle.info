@@ -1,0 +1,2 @@
+name "twoRootedTreeWithCycle"
+description "A directed graph with two vertices with in degree 0. The graph contains one cycle."
