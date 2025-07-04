@@ -1,11 +1,15 @@
 package no.uib.mayarobbestad.dagcentrality;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.Stack;
 
 import org.jgrapht.Graph;
@@ -20,70 +24,46 @@ public class Main {
 
     static GraphBuilder builder = new GraphBuilder();
 
-    static String directedSyntheticString = "Directed synthetic graphs";
-    static String undirectedSynteticString = "Undirected synthetic graphs";
-
-    static ArrayList<String> directedSyntheticData = new ArrayList<>(Arrays.asList(
-            "cycle", "path", "star-in", "star-out", "twoRootedTreeWithCycle"));
-    static ArrayList<String> undirectedSyntheticData = new ArrayList<>(Arrays.asList(
-            "clique-bridge", "clique-four", "clique-three"));
-
-    static Graph<Integer, DefaultEdge>[] directedSyntheticGraphs = new Graph[directedSyntheticData.size()];
-    static Graph<Integer, DefaultEdge>[] undirectedSyntheticGraphs = new Graph[undirectedSyntheticData.size()];
+    static ArrayList<Graph<Integer, DefaultEdge>> graphs = new ArrayList<>();
+    static ArrayList<String> graphPaths = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
-        // printGraphs("data/synthetic/directed/", directedSyntheticData, true);
-        // printGraphs("data/synthetic/undirected/", undirectedSyntheticData, false);
-
-        readAndStoreGraphs("data/synthetic/directed/", directedSyntheticData, directedSyntheticGraphs, true);
-        readAndStoreGraphs("data/synthetic/undirected/", undirectedSyntheticData, undirectedSyntheticGraphs, false);
-
-        GraphPrinter.printGraphs(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
-        GraphPrinter.printGraphs(undirectedSynteticString, undirectedSyntheticData, undirectedSyntheticGraphs);
-
-        GraphPrinter.printBetweennessScores(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
-        GraphPrinter.printBetweennessScores(undirectedSynteticString, undirectedSyntheticData,
-                undirectedSyntheticGraphs);
-
-        GraphPrinter.printEigenvectorScores(directedSyntheticString, directedSyntheticData, directedSyntheticGraphs);
-        GraphPrinter.printEigenvectorScores(undirectedSynteticString, undirectedSyntheticData,
-                undirectedSyntheticGraphs);
-
-        for (int i = 0; i < directedSyntheticData.size(); i++) {
-            System.out.println(graphHasCycle(directedSyntheticGraphs[i]));
-        }
-
-    }
-
-    public static void printGraphs(String name, ArrayList<String> input, Graph[] graphs) {
-        System.out.println("-----" + name + "-----");
-        for (int i = 0; i < input.size(); i++) {
-            String graphData = input.get(i);
-            System.out.println("Graph " + i + ": " + graphData);
-            System.out.println(graphs[i]);
-        }
-        System.out.println("-------------------------------------------------------");
+        readAndStoreGraphs("data/dataFiles.txt", graphs, graphPaths, true);
+        printGraphs(graphs);
     }
 
     /**
-     * Given a list of graphs stored as an edge list.
+     * Given a list of graphs stored as ang edge list.
      * The method reads the graphs and stores the graphs in an array of graph
      * objects.
      * 
-     * @param rootPath
-     * @param input
+     * @param file
      * @param graphs
+     * @param graphNames
      * @param isDirected
      * @throws IOException
      */
-    public static <V, E> void readAndStoreGraphs(String rootPath, ArrayList<String> input,
-            Graph<Integer, DefaultEdge>[] graphs, boolean isDirected)
-            throws IOException {
-        for (int i = 0; i < input.size(); i++) {
-            String graphData = input.get(i);
-            String path = rootPath + graphData + ".in";
-            graphs[i] = (Graph<Integer, DefaultEdge>) builder.readGraphFromInputFile(path, isDirected);
+    private static void readAndStoreGraphs(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs,
+            ArrayList<String> graphNames,
+            boolean isDirected) throws IOException {
+        Scanner sc = new Scanner(new FileReader(new File(file)));
+        sc.useLocale(Locale.US);
+        int n = sc.nextInt();
+        sc.nextLine();
+
+        for (int i = 0; i < n; i++) {
+            String path = sc.nextLine();
+            graphNames.add(i, path);
+            graphs.add(i, (Graph<Integer, DefaultEdge>) builder.readGraphFromInputFile(path, isDirected));
         }
+    }
+
+    public static void printGraphs(ArrayList<Graph<Integer, DefaultEdge>> graphs) {
+        for (int i = 0; i < graphs.size(); i++) {
+            System.out.println("----- " + graphPaths.get(i) + " ------");
+            System.out.println(graphs.get(i));
+        }
+
     }
 
     /**

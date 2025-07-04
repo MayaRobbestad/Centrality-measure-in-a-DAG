@@ -1,0 +1,3 @@
+2
+data/synthetic/directed/cycle.in
+data/synthetic/directed/path.in
