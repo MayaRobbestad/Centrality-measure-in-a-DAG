@@ -1,0 +1,3 @@
+name "vertexSequenceTestGraph"
+description "A 'topological sort' of vertices, where there are two edges pointing to the left. 
+These edges ought to be removed, such that we obtain a Feedback Arc Set"

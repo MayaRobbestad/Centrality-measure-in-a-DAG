@@ -8,9 +8,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.Stack;
 
 import org.jgrapht.Graph;
@@ -40,10 +42,12 @@ public class Main {
         }
         printGraphs(copies);
 
-        int graphNum = 1;
-        ArrayList<Integer> gr = GR(graphs.get(graphNum));
-
-        for (int i = 0; i < graphs.get(graphNum).vertexSet().size(); i++) {
+        int graphNum = 2;
+        List<Integer> gr = GR(graphs.get(graphNum));
+        int n = graphs.get(graphNum).vertexSet().size();
+        System.out.println("n: " + n);
+        System.out.println(gr.size());
+        for (int i = 0; i < n; i++) {
             System.out.println("index: " + i + " vertex: " + gr.get(i));
         }
 
@@ -152,15 +156,15 @@ public class Main {
      * the number of backwards directing edges is minimized. These edges are aprt
      * of the minimimal Feedback Arc Set
      */
-    public static ArrayList<Integer> GR(Graph<Integer, DefaultEdge> g) {
-        ArrayList<Integer> s1 = new ArrayList<>();
-        ArrayList<Integer> s2 = new ArrayList<>();
-        ArrayList<Integer> s = new ArrayList<>();
+    public static List<Integer> GR(Graph<Integer, DefaultEdge> g) {
+        List<Integer> s1 = new ArrayList<>();
+        List<Integer> s2 = new ArrayList<>();
+        List<Integer> s = new ArrayList<>();
 
         Graph<Integer, DefaultEdge> copy = graphCopy(g);
 
-        HashSet<Integer> sinks = new HashSet<>();
-        HashSet<Integer> sources = new HashSet<>();
+        Set<Integer> sinks = new HashSet<>();
+        Set<Integer> sources = new HashSet<>();
 
         for (Integer v : copy.vertexSet()) {
             if (copy.inDegreeOf(v) == 0) {
@@ -182,11 +186,20 @@ public class Main {
         while (!copy.vertexSet().isEmpty()) {
 
             while (!sinks.isEmpty()) {
-                Integer v = sinks.iterator().next(); // TODO
+                System.out.println("sinks");
+                Integer v = sinks.iterator().next();
+                sinks.remove(v);
+                // if a sink vertex also has become a source vertex, remove this vertex from the
+                // source list
+                if (copy.inDegreeOf(v) == 0) {
+                    sources.remove(v);
+                }
+                System.out.println("v: " + v);
                 // list is reversed later
                 s2.add(v);
-                System.out.println("v: " + v);
-                for (DefaultEdge edge : copy.incomingEdgesOf(v)) { // TODO
+                Set<DefaultEdge> incomingEdges = new HashSet<>(copy.incomingEdgesOf(v));
+                System.out.println("number of incoming edges: " + incomingEdges.size());
+                for (DefaultEdge edge : incomingEdges) {
                     System.out.println("edge" + edge);
                     Integer u = copy.getEdgeSource(edge);
                     copy.removeEdge(edge);
@@ -199,9 +212,12 @@ public class Main {
             }
 
             while (!sources.isEmpty()) {
+                System.out.println("sources");
                 Integer v = sources.iterator().next();
+                sources.remove(v);
                 s1.add(v);
-                for (DefaultEdge edge : copy.outgoingEdgesOf(v)) {
+                Set<DefaultEdge> outgoingEdges = new HashSet<>(copy.outgoingEdgesOf(v));
+                for (DefaultEdge edge : outgoingEdges) {
                     Integer u = copy.getEdgeTarget(edge);
                     copy.removeEdge(edge);
                     // check if u is now a source vertex
@@ -227,7 +243,8 @@ public class Main {
 
                 // update in and outdegrees
                 // TODO: duplicate code
-                for (DefaultEdge edge : copy.incomingEdgesOf(bestVertex)) {
+                Set<DefaultEdge> incomingEdges = new HashSet<>(copy.incomingEdgesOf(bestVertex));
+                for (DefaultEdge edge : incomingEdges) {
                     Integer u = copy.getEdgeSource(edge);
                     copy.removeEdge(edge);
                     // check if u is now a sink vertex
@@ -236,7 +253,8 @@ public class Main {
                     }
                 }
 
-                for (DefaultEdge edge : copy.outgoingEdgesOf(bestVertex)) {
+                Set<DefaultEdge> outgoingEdges = new HashSet<>(copy.outgoingEdgesOf(bestVertex));
+                for (DefaultEdge edge : outgoingEdges) {
                     Integer u = copy.getEdgeTarget(edge);
                     copy.removeEdge(edge);
                     // check if u is now a source vertex
@@ -250,14 +268,20 @@ public class Main {
 
         int x = s1.size();
         Collections.reverse(s2);
+        System.out.println("s1 size: " + x);
+        System.out.println("s2 size: " + s2.size());
 
-        for (int i = 0; i < copy.vertexSet().size(); i++) {
+        for (int i = 0; i < g.vertexSet().size(); i++) {
+            System.out.println("x: " + x);
             if (i < x) {
+                System.out.println("i: " + i + "elem: " + s1.get(i));
                 s.add(s1.get(i));
             } else {
+                System.out.println("i: " + i + " elem: " + s2.get(i - x));
                 s.add(s2.get(i - x));
             }
         }
+        System.out.println("s size: " + s.size());
 
         return s;
     }
