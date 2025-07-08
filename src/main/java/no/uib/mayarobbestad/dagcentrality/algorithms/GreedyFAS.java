@@ -13,11 +13,14 @@ import org.jgrapht.graph.DefaultEdge;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphCopy;
 
 public class GreedyFAS {
+
     /**
      * This algorithm finds a vertex sequence in a directed graph such that
      * the number of backwards directing edges is minimized. These edges are aprt
-     * of the minimimal Feedback Arc Set
-     * This is the linear arrangement problerm
+     * of the minimimal Feedback Arc Set. This method solves the linear arrangement
+     * (LA) problem
+     * This algorithm is based on the algorithm described in:
+     * "A fast and effective heuristic for the feedback arc set problem"
      */
     public static List<Integer> GR(Graph<Integer, DefaultEdge> g) {
         List<Integer> s1 = new ArrayList<>();
@@ -91,7 +94,7 @@ public class GreedyFAS {
                 s1.add(bestVertex);
 
                 // update in and outdegrees
-                // TODO: duplicate code
+                // TODO: duplicate code??
                 Set<DefaultEdge> incomingEdges = new HashSet<>(copy.incomingEdgesOf(bestVertex));
                 for (DefaultEdge edge : incomingEdges) {
                     Integer u = copy.getEdgeSource(edge);
@@ -127,19 +130,38 @@ public class GreedyFAS {
     }
 
     /**
-     * Remove edges such that the graph becomes a DAG.
-     * To find the minimum set of edges to remove, is called minimum feedback arc
-     * set,
-     * this problem is NP-hard, therefore this method is a greedy approach for now.
+     * This method removes and returns the set of edges in the directed graph,
+     * that make up a minimum Feedback Arc Set, F. The removal of these edges F in
+     * the graph G result in G
+     * becoming a Directed Acyclic Graph (DAG)
+     * The is based on a greedy approach from "A fast and effective heuristic for
+     * the feedback arc set problem"
+     * This method calls the method GR, which finds the linear arrangement for which
+     * the backward arcs make up a feedback arc set,
+     * This is stated in this article: "Efficient Computation of Feedback Arc Set at
+     * Web-Scale"
+     * This method is based on my own ideas, perhaps there is a more efficient way
+     * to
+     * remove the edges from the graph
      */
-    public static void removeCycleFromDirectedGraph() {
-        HashSet<DefaultEdge> toRemove = new HashSet<>();
-
+    public static Set<DefaultEdge> removeCycleFromDirectedGraph(Graph<Integer, DefaultEdge> g) {
+        Set<DefaultEdge> toRemove = new HashSet<>();
+        List<Integer> A = GR(g);
+        for (int i = 0; i < A.size(); i++) {
+            for (DefaultEdge incoming : g.incomingEdgesOf(A.get(i))) {
+                // if the edge points to the left
+                // when ideally all edges should point to the right
+                if (A.indexOf(g.getEdgeSource(incoming)) > i)
+                    toRemove.add(incoming);
+            }
+        }
+        g.removeAllEdges(toRemove);
+        return toRemove;
     }
 
     /**
      * This algoritm checks if there is a cycle in the directed graph,
-     * by performing imperative dfs from each root node
+     * by performing dfs iteratively from each root node
      * 
      * @param <V>
      * @param <E>

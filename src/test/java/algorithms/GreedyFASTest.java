@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -51,6 +53,12 @@ public class GreedyFASTest {
         for (int i = 0; i < output.size(); i++) {
             assertEquals(answers.get(i), output.get(i));
         }
+        // Set<DefaultEdge> F = GreedyFAS.removeCycleFromDirectedGraph(g);
+        // int source = 3;
+        // int target = 4;
+        // assertEquals("(" + source + " : " + target + ")",
+        // F.iterator().next().toString());
+
     }
 
 }

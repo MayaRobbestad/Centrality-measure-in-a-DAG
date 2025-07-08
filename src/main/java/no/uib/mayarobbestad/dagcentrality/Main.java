@@ -4,28 +4,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Queue;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.Stack;
 
 import org.jgrapht.Graph;
-import org.jgrapht.alg.scoring.BetweennessCentrality;
-import org.jgrapht.alg.scoring.EigenvectorCentrality;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.graph.specifics.DirectedSpecifics;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphCopy;
-import no.uib.mayarobbestad.dagcentrality.graph.GraphPrinter;
 
 public class Main {
 
@@ -52,6 +40,12 @@ public class Main {
         for (int i = 0; i < n; i++) {
             System.out.println("index: " + i + " vertex: " + gr.get(i));
         }
+        for (DefaultEdge edge : GreedyFAS.removeCycleFromDirectedGraph(graphs.get(graphNum))) {
+            System.out.println(edge);
+        }
+        List<Graph<Integer, DefaultEdge>> test = new ArrayList<>();
+        test.add(graphs.get(graphNum));
+        printGraphs(test);
     }
 
     /**
@@ -81,7 +75,7 @@ public class Main {
 
     }
 
-    public static void printGraphs(ArrayList<Graph<Integer, DefaultEdge>> graphs) {
+    public static void printGraphs(List<Graph<Integer, DefaultEdge>> graphs) {
         for (int i = 0; i < graphs.size(); i++) {
             System.out.println("----- " + graphPaths.get(i) + " ------");
             System.out.println(graphs.get(i));
