@@ -36,10 +36,15 @@ public class GraphBuilder {
         } else {
             g = new SimpleGraph<>(DefaultEdge.class);
         }
-        for (int u = 0; u < n; u++)
-            g.addVertex(u);
+
         for (int i = 0; i < m; i++) {
             int u = sc.nextInt(), v = sc.nextInt();
+            if (!g.containsVertex(v)) {
+                g.addVertex(v);
+            }
+            if (!g.containsVertex(u)) {
+                g.addVertex(u);
+            }
             g.addEdge(u, v);
         }
         return g;

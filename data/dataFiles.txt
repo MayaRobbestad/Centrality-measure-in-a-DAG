@@ -1,4 +1,5 @@
-3
+1
+data/synthetic/directed/fas1.in
 data/synthetic/directed/cycle.in
 data/synthetic/directed/path.in
 data/synthetic/directed/vertexSequenceTestGraph.in

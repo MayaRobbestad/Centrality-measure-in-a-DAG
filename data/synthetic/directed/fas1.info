@@ -1,0 +1,2 @@
+name "fas1"
+description "Example taken from 'Efficient Computation of Feedback Arc Set at Web-Scale', Figure 1. This graph has a minimal Feedback Arc Set of 1"
