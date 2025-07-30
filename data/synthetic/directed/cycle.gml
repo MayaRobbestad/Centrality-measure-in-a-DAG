@@ -14,6 +14,9 @@ graph [
     node [
         id 3
     ]
+    node [
+        id 4
+    ]
     edge [
         source 0
         target 1
@@ -28,6 +31,10 @@ graph [
     ]
     edge [
         source 3
+        target 4
+    ]
+    edge [
+        source 4
         target 0
     ]
 ]

@@ -9,7 +9,10 @@ import java.util.Locale;
 import java.util.Scanner;
 
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.nio.gml.GmlImporter;
+import org.jgrapht.util.SupplierUtil;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
@@ -20,10 +23,42 @@ public class Main {
     static GraphBuilder builder = new GraphBuilder();
 
     static ArrayList<Graph<Integer, DefaultEdge>> graphs = new ArrayList<>();
-    static ArrayList<String> graphPaths = new ArrayList<>();
+    static ArrayList<String> graphDirectory = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
-        readAndStoreGraphs("data/dataFiles.txt", graphs, graphPaths, true);
+
+        // got the code through google ai. Added the parameters in the constructor by
+        // prompting copilot
+        // When I run this code, I get this error message: Error during GML import:
+        // The graph contains no vertex supplier
+        // copilot wrote that a vertex supplier must be added, and it
+        // suggested this change in the code. There are barely any Tutorials on JGraphT
+        // on GmlImporter
+        // should take a closer look as to why it works
+        // ----------------
+        Graph<String, DefaultEdge> digraph = new DefaultDirectedGraph<>(SupplierUtil.createStringSupplier(),
+                SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
+        GmlImporter<String, DefaultEdge> gmlImporter = new GmlImporter<>();
+        try {
+            // Import the graph from a GML file
+            FileReader reader = new FileReader("data/synthetic/directed/cycle.gml"); // Replace with your GML file path
+            gmlImporter.importGraph(digraph, reader);
+            reader.close();
+
+            // Now, 'graph' contains the data from the GML file
+            System.out.println("Graph imported successfully!");
+            System.out.println("Number of vertices: " + digraph.vertexSet().size());
+            System.out.println("Number of edges: " + digraph.edgeSet().size());
+            System.out.println(digraph);
+
+        } catch (IOException e) {
+            System.err.println("Error reading GML file: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error during GML import: " + e.getMessage());
+        }
+        // ------------------
+
+        readAndStoreGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         printGraphs(graphs);
 
         ArrayList<Graph<Integer, DefaultEdge>> copies = new ArrayList<>();
@@ -77,7 +112,7 @@ public class Main {
 
     public static void printGraphs(List<Graph<Integer, DefaultEdge>> graphs) {
         for (int i = 0; i < graphs.size(); i++) {
-            System.out.println("----- " + graphPaths.get(i) + " ------");
+            System.out.println("----- " + graphDirectory.get(i) + " ------");
             System.out.println(graphs.get(i));
         }
 

@@ -74,7 +74,7 @@ public class GraphPrinter {
      */
     public static void printBetweennessScores(String name, ArrayList<String> input,
             Graph<Integer, DefaultEdge>[] graphs) {
-        System.out.println("-----" + name + "-----");
+        System.out.println("-----Betweenness centrality for" + name + "-----");
         for (int i = 0; i < input.size(); i++) {
             String graphData = input.get(i);
             System.out.println("Graph " + i + ": " + graphData);
@@ -90,7 +90,7 @@ public class GraphPrinter {
      * @param graphs
      */
     public static void printKatzScores(String name, ArrayList<String> input, Graph<Integer, DefaultEdge>[] graphs) {
-        System.out.println("-----Eigenvector centrality for" + name + "-----");
+        System.out.println("-----Katz centrality for" + name + "-----");
         for (int i = 0; i < input.size(); i++) {
             String graphData = input.get(i);
             System.out.println("Graph " + i + ": " + graphData);
@@ -107,7 +107,7 @@ public class GraphPrinter {
      */
     public static void printClosenessScores(String name, ArrayList<String> input,
             Graph<Integer, DefaultEdge>[] graphs) {
-        System.out.println("-----Eigenvector centrality for" + name + "-----");
+        System.out.println("-----Closeness centrality for" + name + "-----");
         for (int i = 0; i < input.size(); i++) {
             String graphData = input.get(i);
             System.out.println("Graph " + i + ": " + graphData);
@@ -123,7 +123,7 @@ public class GraphPrinter {
      * @param graphs
      */
     public static void printPageRank(String name, ArrayList<String> input, Graph<Integer, DefaultEdge>[] graphs) {
-        System.out.println("-----Eigenvector centrality for" + name + "-----");
+        System.out.println("-----PageRank for" + name + "-----");
         for (int i = 0; i < input.size(); i++) {
             String graphData = input.get(i);
             System.out.println("Graph " + i + ": " + graphData);
@@ -138,8 +138,9 @@ public class GraphPrinter {
      * @param input
      * @param graphs
      */
-    public static void printHarmonmiccores(String name, ArrayList<String> input, Graph<Integer, DefaultEdge>[] graphs) {
-        System.out.println("-----Eigenvector centrality for" + name + "-----");
+    public static void printHarmonmicscores(String name, ArrayList<String> input,
+            Graph<Integer, DefaultEdge>[] graphs) {
+        System.out.println("-----Harmonic centrality" + name + "-----");
         for (int i = 0; i < input.size(); i++) {
             String graphData = input.get(i);
             System.out.println("Graph " + i + ": " + graphData);
