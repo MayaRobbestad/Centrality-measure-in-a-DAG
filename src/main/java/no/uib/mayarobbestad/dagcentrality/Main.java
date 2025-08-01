@@ -9,24 +9,37 @@ import java.util.Locale;
 import java.util.Scanner;
 
 import org.jgrapht.Graph;
+import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.gml.GmlImporter;
 import org.jgrapht.util.SupplierUtil;
 
-import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
+import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
-import no.uib.mayarobbestad.dagcentrality.graph.GraphCopy;
 
 public class Main {
 
+    //
     static GraphBuilder builder = new GraphBuilder();
 
+    // The graphs to be run
     static ArrayList<Graph<Integer, DefaultEdge>> graphs = new ArrayList<>();
     static ArrayList<String> graphDirectory = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
+        readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+        for (Graph<Integer, DefaultEdge> g : graphs) {
+            VertexScoringAlgorithm algo = new DegreeCentrality<>(g, true);
 
+            System.out.println(algo.getScores());
+            algo = new DegreeCentrality<>(g, false);
+            System.out.println(algo.getScores());
+        }
+
+    }
+
+    private static void gmlImporterExample() {
         // got the code through google ai. Added the parameters in the constructor by
         // prompting copilot
         // When I run this code, I get this error message: Error during GML import:
@@ -57,30 +70,6 @@ public class Main {
             System.err.println("Error during GML import: " + e.getMessage());
         }
         // ------------------
-
-        readAndStoreGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-        printGraphs(graphs);
-
-        ArrayList<Graph<Integer, DefaultEdge>> copies = new ArrayList<>();
-        for (Graph<Integer, DefaultEdge> graph : graphs) {
-            copies.add(GraphCopy.graphCopy(graph));
-        }
-        printGraphs(copies);
-
-        int graphNum = 0;
-        List<Integer> gr = GreedyFAS.GR(graphs.get(graphNum));
-        int n = graphs.get(graphNum).vertexSet().size();
-        System.out.println("n: " + n);
-        System.out.println(gr.size());
-        for (int i = 0; i < n; i++) {
-            System.out.println("index: " + i + " vertex: " + gr.get(i));
-        }
-        for (DefaultEdge edge : GreedyFAS.removeCycleFromDirectedGraph(graphs.get(graphNum))) {
-            System.out.println(edge);
-        }
-        List<Graph<Integer, DefaultEdge>> test = new ArrayList<>();
-        test.add(graphs.get(graphNum));
-        printGraphs(test);
     }
 
     /**
@@ -94,7 +83,7 @@ public class Main {
      * @param isDirected
      * @throws IOException
      */
-    private static void readAndStoreGraphs(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs,
+    private static void readAndStoreInputGraphs(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs,
             ArrayList<String> graphNames,
             boolean isDirected) throws IOException {
         Scanner sc = new Scanner(new FileReader(new File(file)));

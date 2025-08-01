@@ -1,5 +1,5 @@
-1
-data/synthetic/directed/fas1.in
-data/synthetic/directed/cycle.in
+4
 data/synthetic/directed/path.in
-data/synthetic/directed/vertexSequenceTestGraph.in
+data/synthetic/directed/cycle.in
+data/synthetic/directed/star-in.in
+data/synthetic/directed/star-out.in

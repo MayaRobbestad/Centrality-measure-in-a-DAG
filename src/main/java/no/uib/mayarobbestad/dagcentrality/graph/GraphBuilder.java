@@ -50,4 +50,8 @@ public class GraphBuilder {
         return g;
     }
 
+    public Graph<Integer, DefaultEdge> readGraphFromGmlFile(String file, boolean directed) {
+        return null;
+    }
+
 }

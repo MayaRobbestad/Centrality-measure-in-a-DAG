@@ -12,6 +12,8 @@ import org.jgrapht.alg.scoring.KatzCentrality;
 import org.jgrapht.alg.scoring.PageRank;
 import org.jgrapht.graph.DefaultEdge;
 
+import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
+
 public class GraphPrinter {
 
     public static void printGraphs(String name, ArrayList<String> input, Graph[] graphs) {
@@ -145,6 +147,17 @@ public class GraphPrinter {
             String graphData = input.get(i);
             System.out.println("Graph " + i + ": " + graphData);
             System.out.println(new HarmonicCentrality<>(graphs[i]).getScores());
+        }
+        System.out.println("-------------------------------------------------------");
+    }
+
+    public static void printDegreescores(String name, ArrayList<String> input,
+            Graph<Integer, DefaultEdge>[] graphs) {
+        System.out.println("-----Degree centrality" + name + "-----");
+        for (int i = 0; i < input.size(); i++) {
+            String graphData = input.get(i);
+            System.out.println("Graph " + i + ": " + graphData);
+            System.out.println(new DegreeCentrality<>(graphs[i], false).getScores());
         }
         System.out.println("-------------------------------------------------------");
     }
