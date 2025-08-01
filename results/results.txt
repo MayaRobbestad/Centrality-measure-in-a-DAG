@@ -1,0 +1,54 @@
+Degree centrality
+data/synthetic/directed/path.in = [1:0.6666666666666666,0:0.3333333333333333,2:0.6666666666666666,3:0.3333333333333333]
+data/synthetic/directed/cycle.in = [1:0.5,0:0.5,2:0.5,3:0.5,4:0.5]
+data/synthetic/directed/star-in.in = [0:1.0,1:0.25,2:0.25,3:0.25,4:0.25]
+data/synthetic/directed/star-out.in = [1:0.25,0:1.0,2:0.25,3:0.25,4:0.25]
+
+Indegree centrality
+data/synthetic/directed/path.in = [1:0.3333333333333333,0:0.0,2:0.3333333333333333,3:0.3333333333333333]
+data/synthetic/directed/cycle.in = [1:0.25,0:0.25,2:0.25,3:0.25,4:0.25]
+data/synthetic/directed/star-in.in = [0:1.0,1:0.0,2:0.0,3:0.0,4:0.0]
+data/synthetic/directed/star-out.in = [1:0.25,0:0.0,2:0.25,3:0.25,4:0.25]
+
+Outdegree centrality
+data/synthetic/directed/path.in = [1:0.3333333333333333,0:0.3333333333333333,2:0.3333333333333333,3:0.0]
+data/synthetic/directed/cycle.in = [1:0.25,0:0.25,2:0.25,3:0.25,4:0.25]
+data/synthetic/directed/star-in.in = [0:0.0,1:0.25,2:0.25,3:0.25,4:0.25]
+data/synthetic/directed/star-out.in = [1:0.0,0:1.0,2:0.0,3:0.0,4:0.0]
+
+In-Harmonic centrality
+data/synthetic/directed/path.in = [1:0.3333333333333333,0:0.0,2:0.5,3:0.611111111111111]
+data/synthetic/directed/cycle.in = [1:0.5208333333333333,0:0.5208333333333333,2:0.5208333333333334,3:0.5208333333333333,4:0.5208333333333333]
+data/synthetic/directed/star-in.in = [0:1.0,1:0.0,2:0.0,3:0.0,4:0.0]
+data/synthetic/directed/star-out.in = [1:0.25,0:0.0,2:0.25,3:0.25,4:0.25]
+
+Out-Harmonic centrality
+data/synthetic/directed/path.in = [1:0.5,0:0.611111111111111,2:0.3333333333333333,3:0.0]
+data/synthetic/directed/cycle.in = [1:0.5208333333333334,0:0.5208333333333333,2:0.5208333333333333,3:0.5208333333333333,4:0.5208333333333333]
+data/synthetic/directed/star-in.in = [0:0.0,1:0.25,2:0.25,3:0.25,4:0.25]
+data/synthetic/directed/star-out.in = [1:0.0,0:1.0,2:0.0,3:0.0,4:0.0]
+
+Betweenness centrality
+data/synthetic/directed/path.in = [1:0.3333333333333333,0:0.0,2:0.3333333333333333,3:0.0]
+data/synthetic/directed/cycle.in = [1:0.5,0:0.5,2:0.5,3:0.5,4:0.5]
+data/synthetic/directed/star-in.in = [0:0.0,1:0.0,2:0.0,3:0.0,4:0.0]
+data/synthetic/directed/star-out.in = [1:0.0,0:0.0,2:0.0,3:0.0,4:0.0]
+
+Eigenvector centrality
+data/synthetic/directed/path.in = [1:NaN,0:NaN,2:NaN,3:NaN]
+data/synthetic/directed/cycle.in = [1:0.44721359549995804,0:0.44721359549995804,2:0.44721359549995804,3:0.44721359549995804,4:0.44721359549995804]
+data/synthetic/directed/star-in.in = [0:NaN,1:NaN,2:NaN,3:NaN,4:NaN]
+data/synthetic/directed/star-out.in = [1:NaN,0:NaN,2:NaN,3:NaN,4:NaN]
+
+Katz centrality
+data/synthetic/directed/path.in = [1:1.01,0:1.0,2:1.0101,3:1.0101]
+data/synthetic/directed/cycle.in = [1:1.0101,0:1.0101,2:1.0101,3:1.0101,4:1.0101]
+data/synthetic/directed/star-in.in = [0:1.04,1:1.0,2:1.0,3:1.0,4:1.0]
+data/synthetic/directed/star-out.in = [1:1.01,0:1.0,2:1.01,3:1.01,4:1.01]
+
+PageRank centrality
+data/synthetic/directed/path.in = [1:0.21485586479016253,0:0.11615884302086436,2:0.29880249454263114,3:0.37018279764634204]
+data/synthetic/directed/cycle.in = [1:0.2,0:0.2,2:0.2,3:0.2,4:0.2]
+data/synthetic/directed/star-in.in = [0:0.5237785850054003,1:0.11905535374865003,2:0.11905535374865003,3:0.11905535374865003,4:0.11905535374865003]
+data/synthetic/directed/star-out.in = [1:0.20726598878500008,0:0.17093604486000005,2:0.20726598878500008,3:0.20726598878500008,4:0.20726598878500008]
+
