@@ -8,8 +8,17 @@ import java.net.IDN;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Scanner;
 
+import javax.swing.JFrame;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.alg.scoring.BetweennessCentrality;
@@ -49,7 +58,109 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-        storeCentralityScores("results/results.txt", graphs);
+        storeCentralityScoresInFile("results/results.txt", graphs);
+        storeCentralityScoresInChart("results/charts", graphs);
+        // chartExample();
+        // multipleBarChartExample();
+
+    }
+
+    private static void storeCentralityScoresInChart(String string, ArrayList<Graph<Integer, DefaultEdge>> graphs)
+            throws IOException {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        DefaultCategoryDataset[] datasets = new DefaultCategoryDataset[graphs.size()];
+        if (INDEGREE) {
+            // LIST OF GRAPHS
+            // number of double bars
+            VertexScoringAlgorithm<Integer, Double> algorithm;
+            for (int i = 0; i < graphs.size(); i++) {
+                algorithm = new DegreeCentrality<>(graphs.get(i), true, true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), graphDirectory.get(i), v);
+                }
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart("In-degree", "Graphs", "Centrality score",
+                    dataset, PlotOrientation.VERTICAL, true, true, false);
+
+            ChartUtils.saveChartAsPNG(new File("results/charts/centrality-charts-indegree.png"), barChart, 650, 400);
+        }
+
+        if (OUTDEGREE) {
+            // LIST OF GRAPHS
+            // number of double bars
+            VertexScoringAlgorithm<Integer, Double> algorithm;
+            for (int i = 0; i < graphs.size(); i++) {
+                algorithm = new DegreeCentrality<>(graphs.get(i), false, true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), graphDirectory.get(i), v);
+                }
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart("Out-degree", "Graphs", "Centrality score",
+                    dataset, PlotOrientation.VERTICAL, true, true, false);
+
+            ChartUtils.saveChartAsPNG(new File("results/charts/centrality-charts-outdegree.png"), barChart, 650, 400);
+        }
+
+    }
+
+    private static void multipleBarChartExample() throws IOException {
+        String P1 = "Player 1";
+        String P2 = "Player 2";
+        String Attk = "Attack";
+        String Def = "Defense";
+        String Speed = "Speed";
+        String Stealth = "Stealth";
+
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        // Player 1
+        dataset.addValue(10, P1, Attk);
+        dataset.addValue(7, P1, Def);
+        dataset.addValue(6, P1, Speed);
+        dataset.addValue(6, P1, Stealth);
+
+        // Player 2
+        dataset.addValue(7, P2, Attk);
+        dataset.addValue(9, P2, Def);
+        dataset.addValue(8, P2, Speed);
+        dataset.addValue(8, P2, Stealth);
+
+        JFreeChart barChart = ChartFactory.createBarChart("JFreeChart BarChart", "Players", "Points",
+                dataset, PlotOrientation.VERTICAL, true, true, false);
+
+        ChartUtils.saveChartAsPNG(new File("results/charts/chartExample.png"), barChart, 650, 400);
+
+    }
+
+    /**
+     * Code from https://www.baeldung.com/jfreechart-visualize-data
+     */
+    private static void chartExample() {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        dataset.addValue(200, "Sales", "January");
+        dataset.addValue(150, "Sales", "February");
+        dataset.addValue(180, "Sales", "March");
+        dataset.addValue(260, "Sales", "April");
+        dataset.addValue(300, "Sales", "May");
+
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Monthly Sales",
+                "Month",
+                "Sales",
+                dataset);
+        ChartPanel chartPanel = new ChartPanel(chart);
+        JFrame frame = new JFrame();
+        frame.setSize(800, 600);
+        frame.setContentPane(chartPanel);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+
     }
 
     /**
@@ -60,7 +171,7 @@ public class Main {
      * @param string
      * @throws IOException
      */
-    private static void storeCentralityScores(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs)
+    private static void storeCentralityScoresInFile(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs)
             throws IOException {
         FileWriter writer = new FileWriter(file);
         int numGraphs = graphs.size();
@@ -251,6 +362,11 @@ public class Main {
             System.err.println("Error during GML import: " + e.getMessage());
         }
         // ------------------
+    }
+
+    private static void readAndStoreGmlGraphs(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs,
+            ArrayList<String> graphNames,
+            boolean isDirected) throws IOException {
     }
 
     /**
