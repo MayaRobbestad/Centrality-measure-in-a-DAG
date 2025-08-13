@@ -4,17 +4,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.IDN;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
-import javax.swing.JFrame;
-
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
@@ -26,10 +22,7 @@ import org.jgrapht.alg.scoring.EigenvectorCentrality;
 import org.jgrapht.alg.scoring.HarmonicCentrality;
 import org.jgrapht.alg.scoring.KatzCentrality;
 import org.jgrapht.alg.scoring.PageRank;
-import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.nio.gml.GmlImporter;
-import org.jgrapht.util.SupplierUtil;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
@@ -57,19 +50,107 @@ public class Main {
     static final boolean MYDAGCENTRALITY = false;
 
     public static void main(String[] args) throws IOException {
-        readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+        // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+        readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         storeCentralityScoresInFile("results/results.txt", graphs);
-        storeCentralityScoresInChart("results/charts", graphs);
-        // chartExample();
-        // multipleBarChartExample();
+        storeCentralityScoresInChartCompareGraphs("results/charts/graph comparisons/", graphs);
+        storeCentralityScoresInChartCompareMeasures("results/charts/centrality comparisons/", graphs);
+    }
+
+    /**
+     * 
+     * @param folder
+     * @param graphs
+     * @throws IOException
+     */
+    private static void storeCentralityScoresInChartCompareMeasures(String folder,
+            ArrayList<Graph<Integer, DefaultEdge>> graphs) throws IOException {
+
+        DefaultCategoryDataset dataset;
+        for (int i = 0; i < graphs.size(); i++) {
+            dataset = new DefaultCategoryDataset();
+            VertexScoringAlgorithm<Integer, Double> algorithm;
+            if (INDEGREE) {
+                algorithm = new DegreeCentrality<>(
+                        graphs.get(i), true, true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "in-degree", v);
+                }
+            }
+            if (OUTDEGREE) {
+                algorithm = new DegreeCentrality<>(
+                        graphs.get(i), false, true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "out-degree", v);
+                }
+            }
+            if (INHARMONIC) {
+                algorithm = new HarmonicCentrality<>(graphs.get(i), true, true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "in-harmonic", v);
+                }
+            }
+            if (OUTHARMONIC) {
+                algorithm = new HarmonicCentrality<>(graphs.get(i), false, true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "out-harmonic", v);
+                }
+            }
+            if (BETWEENNESS) {
+                algorithm = new BetweennessCentrality<>(graphs.get(i), true);
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "betweeness", v);
+                }
+            }
+            if (EIGENVECTOR) {
+                algorithm = new EigenvectorCentrality<>(graphs.get(i));
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "eigenvector", v);
+                }
+            }
+            if (KATZ) {
+                algorithm = new KatzCentrality<>(graphs.get(i));
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "katz", v);
+                }
+            }
+            if (PAGERANK) {
+                algorithm = new PageRank<>(graphs.get(i));
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), "pagerank", v);
+                }
+            }
+            JFreeChart barChart = ChartFactory.createBarChart(graphDirectory.get(i), "Measures", "Centrality score",
+                    dataset, PlotOrientation.VERTICAL, true, true, false);
+
+            ChartUtils.saveChartAsPNG(new File(folder + "graph" + i + ".png"), barChart, 650, 400);
+        }
 
     }
 
-    private static void storeCentralityScoresInChart(String string, ArrayList<Graph<Integer, DefaultEdge>> graphs)
+    /**
+     * Creates and stores charts that compares different graphs based on the same
+     * centrality measure
+     * 
+     * Based on https://coderslegacy.com/java/jfreechart-bar-chart/ and
+     * https://www.baeldung.com/jfreechart-visualize-data
+     * 
+     * @param folder
+     * @param graphs
+     * @throws IOException
+     */
+    private static void storeCentralityScoresInChartCompareGraphs(String folder,
+            ArrayList<Graph<Integer, DefaultEdge>> graphs)
             throws IOException {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        DefaultCategoryDataset[] datasets = new DefaultCategoryDataset[graphs.size()];
         if (INDEGREE) {
             // LIST OF GRAPHS
             // number of double bars
@@ -85,7 +166,7 @@ public class Main {
             JFreeChart barChart = ChartFactory.createBarChart("In-degree", "Graphs", "Centrality score",
                     dataset, PlotOrientation.VERTICAL, true, true, false);
 
-            ChartUtils.saveChartAsPNG(new File("results/charts/centrality-charts-indegree.png"), barChart, 650, 400);
+            ChartUtils.saveChartAsPNG(new File(folder + "indegree.png"), barChart, 650, 400);
         }
 
         if (OUTDEGREE) {
@@ -103,63 +184,8 @@ public class Main {
             JFreeChart barChart = ChartFactory.createBarChart("Out-degree", "Graphs", "Centrality score",
                     dataset, PlotOrientation.VERTICAL, true, true, false);
 
-            ChartUtils.saveChartAsPNG(new File("results/charts/centrality-charts-outdegree.png"), barChart, 650, 400);
+            ChartUtils.saveChartAsPNG(new File(folder + "outdegree.png"), barChart, 650, 400);
         }
-
-    }
-
-    private static void multipleBarChartExample() throws IOException {
-        String P1 = "Player 1";
-        String P2 = "Player 2";
-        String Attk = "Attack";
-        String Def = "Defense";
-        String Speed = "Speed";
-        String Stealth = "Stealth";
-
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        // Player 1
-        dataset.addValue(10, P1, Attk);
-        dataset.addValue(7, P1, Def);
-        dataset.addValue(6, P1, Speed);
-        dataset.addValue(6, P1, Stealth);
-
-        // Player 2
-        dataset.addValue(7, P2, Attk);
-        dataset.addValue(9, P2, Def);
-        dataset.addValue(8, P2, Speed);
-        dataset.addValue(8, P2, Stealth);
-
-        JFreeChart barChart = ChartFactory.createBarChart("JFreeChart BarChart", "Players", "Points",
-                dataset, PlotOrientation.VERTICAL, true, true, false);
-
-        ChartUtils.saveChartAsPNG(new File("results/charts/chartExample.png"), barChart, 650, 400);
-
-    }
-
-    /**
-     * Code from https://www.baeldung.com/jfreechart-visualize-data
-     */
-    private static void chartExample() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        dataset.addValue(200, "Sales", "January");
-        dataset.addValue(150, "Sales", "February");
-        dataset.addValue(180, "Sales", "March");
-        dataset.addValue(260, "Sales", "April");
-        dataset.addValue(300, "Sales", "May");
-
-        JFreeChart chart = ChartFactory.createBarChart(
-                "Monthly Sales",
-                "Month",
-                "Sales",
-                dataset);
-        ChartPanel chartPanel = new ChartPanel(chart);
-        JFrame frame = new JFrame();
-        frame.setSize(800, 600);
-        frame.setContentPane(chartPanel);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
 
     }
 
@@ -331,44 +357,6 @@ public class Main {
 
     }
 
-    private static void gmlImporterExample() {
-        // got the code through google ai. Added the parameters in the constructor by
-        // prompting copilot
-        // When I run this code, I get this error message: Error during GML import:
-        // The graph contains no vertex supplier
-        // copilot wrote that a vertex supplier must be added, and it
-        // suggested this change in the code. There are barely any Tutorials on JGraphT
-        // on GmlImporter
-        // should take a closer look as to why it works
-        // ----------------
-        Graph<String, DefaultEdge> digraph = new DefaultDirectedGraph<>(SupplierUtil.createStringSupplier(),
-                SupplierUtil.DEFAULT_EDGE_SUPPLIER, false);
-        GmlImporter<String, DefaultEdge> gmlImporter = new GmlImporter<>();
-        try {
-            // Import the graph from a GML file
-            FileReader reader = new FileReader("data/synthetic/directed/cycle.gml"); // Replace with your GML file path
-            gmlImporter.importGraph(digraph, reader);
-            reader.close();
-
-            // Now, 'graph' contains the data from the GML file
-            System.out.println("Graph imported successfully!");
-            System.out.println("Number of vertices: " + digraph.vertexSet().size());
-            System.out.println("Number of edges: " + digraph.edgeSet().size());
-            System.out.println(digraph);
-
-        } catch (IOException e) {
-            System.err.println("Error reading GML file: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Error during GML import: " + e.getMessage());
-        }
-        // ------------------
-    }
-
-    private static void readAndStoreGmlGraphs(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs,
-            ArrayList<String> graphNames,
-            boolean isDirected) throws IOException {
-    }
-
     /**
      * Given a list of graphs stored as an edge list.
      * The method reads the graphs and stores the graphs in an array of graph
@@ -393,14 +381,44 @@ public class Main {
             graphNames.add(i, path);
             graphs.add(i, (Graph<Integer, DefaultEdge>) builder.readGraphFromInputFile(path, isDirected));
         }
-
     }
 
+    /**
+     * Given a list of graphs stored in a gml format.
+     * The method reads the graphs and stores the graphs in an array of graph
+     * objects.
+     * 
+     * @param file
+     * @param graphs
+     * @param graphNames
+     * @param isDirected
+     * @throws IOException
+     */
+    private static void readAndStoreGmlGraphs(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs,
+            ArrayList<String> graphNames,
+            boolean isDirected) throws IOException {
+        Scanner sc = new Scanner(new FileReader(new File(file)));
+        sc.useLocale(Locale.US);
+        int n = sc.nextInt();
+        sc.nextLine();
+
+        for (int i = 0; i < n; i++) {
+            String path = sc.nextLine();
+            graphNames.add(i, path);
+            graphs.add(i, (Graph<Integer, DefaultEdge>) builder.readGraphFromGmlFile(path, isDirected));
+        }
+    }
+
+    /**
+     * Prints the graph from the array of graphs in the terminal
+     * 
+     * @param graphs
+     */
     public static void printGraphs(List<Graph<Integer, DefaultEdge>> graphs) {
         for (int i = 0; i < graphs.size(); i++) {
             System.out.println("----- " + graphDirectory.get(i) + " ------");
             System.out.println(graphs.get(i));
         }
-
     }
+
 }
