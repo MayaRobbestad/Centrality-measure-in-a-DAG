@@ -23,7 +23,9 @@ import org.jgrapht.alg.scoring.HarmonicCentrality;
 import org.jgrapht.alg.scoring.KatzCentrality;
 import org.jgrapht.alg.scoring.PageRank;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 
+import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 
@@ -37,17 +39,17 @@ public class Main {
     static ArrayList<String> graphDirectory = new ArrayList<>();
 
     // The centrality algorithms to be run
-    static final boolean DEGREE = true;
-    static final boolean INDEGREE = true;
-    static final boolean OUTDEGREE = true;
-    static final boolean CLOSENESS = true;
-    static final boolean INHARMONIC = true; // variation of closeness
-    static final boolean OUTHARMONIC = true;
-    static final boolean BETWEENNESS = true;
-    static final boolean EIGENVECTOR = true;
-    static final boolean KATZ = true;
-    static final boolean PAGERANK = true;
-    static final boolean MYDAGCENTRALITY = false;
+    static final boolean DEGREE = false;
+    static final boolean INDEGREE = false;
+    static final boolean OUTDEGREE = false;
+    static final boolean CLOSENESS = false;
+    static final boolean INHARMONIC = false; // variation of closeness
+    static final boolean OUTHARMONIC = false;
+    static final boolean BETWEENNESS = false;
+    static final boolean EIGENVECTOR = false;
+    static final boolean KATZ = false;
+    static final boolean PAGERANK = false;
+    static final boolean DAGCENTRALITY0 = true;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
@@ -55,6 +57,7 @@ public class Main {
         storeCentralityScoresInFile("results/results.txt", graphs);
         storeCentralityScoresInChartCompareGraphs("results/charts/graph comparisons/", graphs);
         storeCentralityScoresInChartCompareMeasures("results/charts/centrality comparisons/", graphs);
+
     }
 
     /**
@@ -168,7 +171,6 @@ public class Main {
 
             ChartUtils.saveChartAsPNG(new File(folder + "indegree.png"), barChart, 650, 400);
         }
-
         if (OUTDEGREE) {
             // LIST OF GRAPHS
             // number of double bars
@@ -185,6 +187,23 @@ public class Main {
                     dataset, PlotOrientation.VERTICAL, true, true, false);
 
             ChartUtils.saveChartAsPNG(new File(folder + "outdegree.png"), barChart, 650, 400);
+        }
+        if (DAGCENTRALITY0) {
+            // LIST OF GRAPHS
+            // number of double bars
+            VertexScoringAlgorithm<Integer, Double> algorithm;
+            for (int i = 0; i < graphs.size(); i++) {
+                algorithm = new DAGPageRankCentrality<>(graphs.get(i));
+                Map<Integer, Double> scores = algorithm.getScores();
+                for (Integer v : scores.keySet()) {
+                    dataset.addValue(scores.get(v), graphDirectory.get(i), v);
+                }
+            }
+
+            JFreeChart barChart = ChartFactory.createBarChart("DAG centrality", "Graphs", "Centrality score",
+                    dataset, PlotOrientation.VERTICAL, true, true, false);
+
+            ChartUtils.saveChartAsPNG(new File(folder + "DAGPageRank.png"), barChart, 650, 400);
         }
 
     }
@@ -299,9 +318,8 @@ public class Main {
                 writer.write(builder.toString());
                 writer.write("]\n");
             }
-
+            writer.write("\n");
         }
-        writer.write("\n");
         if (EIGENVECTOR) {
             writer.write("Eigenvector centrality\n");
             for (int i = 0; i < numGraphs; i++) {
@@ -316,9 +334,8 @@ public class Main {
                 writer.write(builder.toString());
                 writer.write("]\n");
             }
-
+            writer.write("\n");
         }
-        writer.write("\n");
         if (KATZ) {
             writer.write("Katz centrality\n");
             for (int i = 0; i < numGraphs; i++) {
@@ -333,9 +350,8 @@ public class Main {
                 writer.write(builder.toString());
                 writer.write("]\n");
             }
-
+            writer.write("\n");
         }
-        writer.write("\n");
         if (PAGERANK) {
             writer.write("PageRank centrality\n");
             for (int i = 0; i < numGraphs; i++) {
@@ -350,8 +366,26 @@ public class Main {
                 writer.write(builder.toString());
                 writer.write("]\n");
             }
+            writer.write("\n");
         }
-        writer.write("\n");
+
+        if (DAGCENTRALITY0) {
+            writer.write("Dag centrality version 0\n");
+            for (int i = 0; i < numGraphs; i++) {
+                writer.write(graphDirectory.get(i) + " = [");
+                // TODO: bad practice fix this
+                centralityAlgorithm = new DAGPageRankCentrality<>(graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
+                }
+                int n = builder.length();
+                builder.deleteCharAt(n - 1);
+                writer.write(builder.toString());
+                writer.write("]\n");
+            }
+            writer.write("\n");
+        }
 
         writer.close();
 
