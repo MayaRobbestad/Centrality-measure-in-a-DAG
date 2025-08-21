@@ -23,8 +23,9 @@ import org.jgrapht.alg.scoring.HarmonicCentrality;
 import org.jgrapht.alg.scoring.KatzCentrality;
 import org.jgrapht.alg.scoring.PageRank;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DirectedAcyclicGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import no.uib.mayarobbestad.dagcentrality.algorithms.DAGBetweennessSourceSinkCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
@@ -49,7 +50,8 @@ public class Main {
     static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
-    static final boolean DAGCENTRALITY0 = true;
+    static final boolean DAGCENTRALITY0 = false;
+    static final boolean DAGCENTRALITY1 = true;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
@@ -57,6 +59,12 @@ public class Main {
         storeCentralityScoresInFile("results/results.txt", graphs);
         storeCentralityScoresInChartCompareGraphs("results/charts/graph comparisons/", graphs);
         storeCentralityScoresInChartCompareMeasures("results/charts/centrality comparisons/", graphs);
+
+        // example of topologica sorting
+        TopologicalOrderIterator<Integer, DefaultEdge> iterator = new TopologicalOrderIterator<>(graphs.get(0));
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
 
     }
 
@@ -222,10 +230,14 @@ public class Main {
         int numGraphs = graphs.size();
         VertexScoringAlgorithm<Integer, Double> centralityAlgorithm;
         if (DEGREE) {
+            /*
+             * Also possible, instead of writing the name directly
+             * centralityAlgorithm = new DegreeCentrality<>(graphs.get(0), true);
+             * writer.write(centralityAlgorithm.getClass().getSimpleName() + "\n");
+             */
             writer.write("Degree centrality\n");
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
-                centralityAlgorithm = new DegreeCentrality<>(graphs.get(i), true);
                 // makes sure that all vertices are written in the file, eventhopugh we might
                 // have deleted some vertieces previously
                 StringBuilder builder = new StringBuilder();
@@ -375,6 +387,24 @@ public class Main {
                 writer.write(graphDirectory.get(i) + " = [");
                 // TODO: bad practice fix this
                 centralityAlgorithm = new DAGPageRankCentrality<>(graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
+                }
+                int n = builder.length();
+                builder.deleteCharAt(n - 1);
+                writer.write(builder.toString());
+                writer.write("]\n");
+            }
+            writer.write("\n");
+        }
+
+        if (DAGCENTRALITY1) {
+            writer.write("Dag centrality version 1\n");
+            for (int i = 0; i < numGraphs; i++) {
+                writer.write(graphDirectory.get(i) + " = [");
+                // TODO: bad practice fix this
+                centralityAlgorithm = new DAGBetweennessSourceSinkCentrality<>(graphs.get(i));
                 StringBuilder builder = new StringBuilder();
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");

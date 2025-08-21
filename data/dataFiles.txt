@@ -1,5 +1,6 @@
 1
 data/synthetic/directed/dag0.gml
+data/synthetic/directed/dag0ExtraEdges.gml
 data/synthetic/directed/path.gml
 data/synthetic/directed/star-in.gml
 data/synthetic/directed/star-out.gml
