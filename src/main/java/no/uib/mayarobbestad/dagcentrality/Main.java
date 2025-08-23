@@ -50,13 +50,16 @@ public class Main {
     static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
-    static final boolean DAGCENTRALITY0 = false;
-    static final boolean DAGCENTRALITY1 = true;
+    static final boolean DAGPAGERANK = false;
+    static final boolean DAGBETWEENNESS = true;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         storeCentralityScoresInFile("results/results.txt", graphs);
+
+        // TODO: change this such that we use the results from results.txt, instead of
+        // runniong the algorithms again
         storeCentralityScoresInChartCompareGraphs("results/charts/graph comparisons/", graphs);
         storeCentralityScoresInChartCompareMeasures("results/charts/centrality comparisons/", graphs);
 
@@ -196,7 +199,7 @@ public class Main {
 
             ChartUtils.saveChartAsPNG(new File(folder + "outdegree.png"), barChart, 650, 400);
         }
-        if (DAGCENTRALITY0) {
+        if (DAGPAGERANK) {
             // LIST OF GRAPHS
             // number of double bars
             VertexScoringAlgorithm<Integer, Double> algorithm;
@@ -240,6 +243,8 @@ public class Main {
                 writer.write(graphDirectory.get(i) + " = [");
                 // makes sure that all vertices are written in the file, eventhopugh we might
                 // have deleted some vertieces previously
+                centralityAlgorithm = new DegreeCentrality<>(graphs.get(i), false, true);
+
                 StringBuilder builder = new StringBuilder();
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
@@ -381,7 +386,7 @@ public class Main {
             writer.write("\n");
         }
 
-        if (DAGCENTRALITY0) {
+        if (DAGPAGERANK) {
             writer.write("Dag centrality version 0\n");
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
@@ -399,7 +404,7 @@ public class Main {
             writer.write("\n");
         }
 
-        if (DAGCENTRALITY1) {
+        if (DAGBETWEENNESS) {
             writer.write("Dag centrality version 1\n");
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
