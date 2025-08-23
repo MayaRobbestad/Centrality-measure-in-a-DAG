@@ -1,10 +1,10 @@
 1
-data/synthetic/directed/dag0.gml
-data/synthetic/directed/dag0ExtraEdges.gml
-data/synthetic/directed/path.gml
-data/synthetic/directed/star-in.gml
-data/synthetic/directed/star-out.gml
-data/synthetic/directed/cycle.gml
+data/synthetic/directed/format/gml/dag0.gml
+data/synthetic/directed/format/gml/dag0ExtraEdges.gml
+data/synthetic/directed/format/gml/path.gml
+data/synthetic/directed/format/gml/star-in.gml
+data/synthetic/directed/format/gml/star-out.gml
+data/synthetic/directed/format/gml/cycle.gml
 
 data/synthetic/directed/path.in
 data/synthetic/directed/cycle.in
