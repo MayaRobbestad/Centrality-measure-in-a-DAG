@@ -17,7 +17,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
 
     private Graph<V, E> graph;
     private Map<V, Double> scores;
-    int ITERATIONS = 3;
+    int ITERATIONS = 5;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
         this.graph = graph;

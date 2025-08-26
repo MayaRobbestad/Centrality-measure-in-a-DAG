@@ -1,7 +1,8 @@
 graph [
     directed 1
-    n 7
+    n 8
     m 7
+    description "Example Pål has given at our meeting at 12/8/2025"
     node [
         id 0
     ]
@@ -23,33 +24,39 @@ graph [
     node [
         id 6
     ]
-
+    node [
+        id 7
+    ]
+    edge [
+        source 0
+        target 2
+    ]
     edge [
         source 0
         target 3
     ]
     edge [
         source 1
-        target 2
-    ]
-    edge [
-        source 2
         target 3
     ]
-    edge [
-        source 2
+        edge [
+        source 1
         target 4
     ]
     edge [
         source 2
         target 5
-    ]  
+    ]
     edge [
-        source 5
-        target 4
+        source 2
+        target 6
     ]
     edge [
         source 4
-        target 6
+        target 7
+    ]
+    edge [
+        source 3
+        target 7
     ]
 ]

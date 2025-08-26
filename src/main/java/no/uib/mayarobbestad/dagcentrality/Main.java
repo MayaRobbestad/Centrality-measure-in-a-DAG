@@ -107,8 +107,8 @@ public class Main {
 
         JFreeChart barChart = ChartFactory.createBarChart(algorithmName, "Graphs", "Centrality score",
                 dataset, PlotOrientation.VERTICAL, true, true, false);
-        // ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + "/" +
-        // algorithmName + ".png"), barChart, 650,400);
+        // TODO: change this to safe the results into seperate folders, instead of
+        // everything in one folder
         ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + algorithmName + ".png"), barChart, 650,
                 400);
     }
