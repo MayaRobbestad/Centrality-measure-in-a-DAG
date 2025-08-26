@@ -51,172 +51,66 @@ public class Main {
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DAGPAGERANK = true;
-    static final boolean DAGBETWEENNESS = false;
+    static final boolean DAGBETWEENNESS = true;
+
+    static int numAlgorithms = 0;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         storeCentralityScoresInFile("results/results.txt", graphs);
-
-        // TODO: change this such that we use the results from results.txt, instead of
-        // runniong the algorithms again
-        storeCentralityScoresInChartCompareGraphs("results/charts/graph comparisons/", graphs);
-        storeCentralityScoresInChartCompareMeasures("results/charts/centrality comparisons/", graphs);
+        readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
 
         // example of topologica sorting
         TopologicalOrderIterator<Integer, DefaultEdge> iterator = new TopologicalOrderIterator<>(graphs.get(0));
         while (iterator.hasNext()) {
             System.out.println(iterator.next());
         }
-
     }
 
     /**
+     * Reads the results in the results file, and makes a chart based on the
+     * centrality scores.
      * 
-     * @param folder
-     * @param graphs
+     * @param string
      * @throws IOException
      */
-    private static void storeCentralityScoresInChartCompareMeasures(String folder,
-            ArrayList<Graph<Integer, DefaultEdge>> graphs) throws IOException {
+    private static void readResultsAndStoreScoresInChart(String file, String folder) throws IOException {
+        Scanner sc = new Scanner(new FileReader(new File(file)));
+        sc.useLocale(Locale.US);
+        for (int a = 0; a < numAlgorithms; a++) {
+            String algorithmName = sc.nextLine();
+            for (int g = 0; g < graphs.size(); g++) {
+                String graphResult = sc.nextLine();
 
-        DefaultCategoryDataset dataset;
-        for (int i = 0; i < graphs.size(); i++) {
-            dataset = new DefaultCategoryDataset();
-            VertexScoringAlgorithm<Integer, Double> algorithm;
-            if (INDEGREE) {
-                algorithm = new DegreeCentrality<>(
-                        graphs.get(i), true, true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "in-degree", v);
-                }
-            }
-            if (OUTDEGREE) {
-                algorithm = new DegreeCentrality<>(
-                        graphs.get(i), false, true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "out-degree", v);
-                }
-            }
-            if (INHARMONIC) {
-                algorithm = new HarmonicCentrality<>(graphs.get(i), true, true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "in-harmonic", v);
-                }
-            }
-            if (OUTHARMONIC) {
-                algorithm = new HarmonicCentrality<>(graphs.get(i), false, true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "out-harmonic", v);
-                }
-            }
-            if (BETWEENNESS) {
-                algorithm = new BetweennessCentrality<>(graphs.get(i), true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "betweeness", v);
-                }
-            }
-            if (EIGENVECTOR) {
-                algorithm = new EigenvectorCentrality<>(graphs.get(i));
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "eigenvector", v);
-                }
-            }
-            if (KATZ) {
-                algorithm = new KatzCentrality<>(graphs.get(i));
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "katz", v);
-                }
-            }
-            if (PAGERANK) {
-                algorithm = new PageRank<>(graphs.get(i));
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), "pagerank", v);
-                }
-            }
-            JFreeChart barChart = ChartFactory.createBarChart(graphDirectory.get(i), "Measures", "Centrality score",
-                    dataset, PlotOrientation.VERTICAL, true, true, false);
+                makeChart(algorithmName, graphResult, folder);
 
-            ChartUtils.saveChartAsPNG(new File(folder + "graph" + i + ".png"), barChart, 650, 400);
+            }
+            sc.nextLine(); // empty line
         }
-
     }
 
-    /**
-     * Creates and stores charts that compares different graphs based on the same
-     * centrality measure
-     * 
-     * Based on https://coderslegacy.com/java/jfreechart-bar-chart/ and
-     * https://www.baeldung.com/jfreechart-visualize-data
-     * 
-     * @param folder
-     * @param graphs
-     * @throws IOException
-     */
-    private static void storeCentralityScoresInChartCompareGraphs(String folder,
-            ArrayList<Graph<Integer, DefaultEdge>> graphs)
-            throws IOException {
+    private static void makeChart(String algorithmName, String graphResult, String folder) throws IOException {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        if (INDEGREE) {
-            // LIST OF GRAPHS
-            // number of double bars
-            VertexScoringAlgorithm<Integer, Double> algorithm;
-            for (int i = 0; i < graphs.size(); i++) {
-                algorithm = new DegreeCentrality<>(graphs.get(i), true, true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), graphDirectory.get(i), v);
-                }
-            }
 
-            JFreeChart barChart = ChartFactory.createBarChart("In-degree", "Graphs", "Centrality score",
-                    dataset, PlotOrientation.VERTICAL, true, true, false);
+        int n = graphResult.strip().split("=")[0].split("/").length;
+        String graphName = graphResult.strip().split("=")[0].split("/")[n - 1].replaceAll(".gml", "");
+        int resultsLength = graphResult.strip().split("=")[1].length();
+        String results = graphResult.strip().split("=")[1].substring(2, resultsLength - 1);
+        // .replaceAll("[", "").replaceAll("]", "");
 
-            ChartUtils.saveChartAsPNG(new File(folder + "indegree.png"), barChart, 650, 400);
-        }
-        if (OUTDEGREE) {
-            // LIST OF GRAPHS
-            // number of double bars
-            VertexScoringAlgorithm<Integer, Double> algorithm;
-            for (int i = 0; i < graphs.size(); i++) {
-                algorithm = new DegreeCentrality<>(graphs.get(i), false, true);
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), graphDirectory.get(i), v);
-                }
-            }
-
-            JFreeChart barChart = ChartFactory.createBarChart("Out-degree", "Graphs", "Centrality score",
-                    dataset, PlotOrientation.VERTICAL, true, true, false);
-
-            ChartUtils.saveChartAsPNG(new File(folder + "outdegree.png"), barChart, 650, 400);
-        }
-        if (DAGPAGERANK) {
-            // LIST OF GRAPHS
-            // number of double bars
-            VertexScoringAlgorithm<Integer, Double> algorithm;
-            for (int i = 0; i < graphs.size(); i++) {
-                algorithm = new DAGPageRankCentrality<>(graphs.get(i));
-                Map<Integer, Double> scores = algorithm.getScores();
-                for (Integer v : scores.keySet()) {
-                    dataset.addValue(scores.get(v), graphDirectory.get(i), v);
-                }
-            }
-
-            JFreeChart barChart = ChartFactory.createBarChart("DAG centrality", "Graphs", "Centrality score",
-                    dataset, PlotOrientation.VERTICAL, true, true, false);
-
-            ChartUtils.saveChartAsPNG(new File(folder + "DAGPageRank.png"), barChart, 650, 400);
+        for (String pair : results.split(",")) {
+            Integer vertex = Integer.parseInt(pair.split(":")[0]);
+            Double score = Double.parseDouble(pair.split(":")[1]);
+            dataset.addValue(score, graphName, vertex);
         }
 
+        JFreeChart barChart = ChartFactory.createBarChart(algorithmName, "Graphs", "Centrality score",
+                dataset, PlotOrientation.VERTICAL, true, true, false);
+        // ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + "/" +
+        // algorithmName + ".png"), barChart, 650,400);
+        ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + algorithmName + ".png"), barChart, 650,
+                400);
     }
 
     /**
@@ -256,6 +150,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (INDEGREE) {
             writer.write("Indegree centrality\n");
@@ -273,6 +168,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (OUTDEGREE) {
             writer.write("Outdegree centrality\n");
@@ -290,6 +186,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (INHARMONIC) {
             writer.write("In-Harmonic centrality\n");
@@ -307,6 +204,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (OUTHARMONIC) {
             writer.write("Out-Harmonic centrality\n");
@@ -324,6 +222,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
 
         if (BETWEENNESS) {
@@ -342,6 +241,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (EIGENVECTOR) {
             writer.write("Eigenvector centrality\n");
@@ -359,6 +259,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (KATZ) {
             writer.write("Katz centrality\n");
@@ -375,6 +276,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
         if (PAGERANK) {
             writer.write("PageRank centrality\n");
@@ -391,6 +293,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
 
         if (DAGPAGERANK) {
@@ -410,6 +313,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
 
         if (DAGBETWEENNESS) {
@@ -429,6 +333,7 @@ public class Main {
                 writer.write("]\n");
             }
             writer.write("\n");
+            numAlgorithms++;
         }
 
         writer.close();
