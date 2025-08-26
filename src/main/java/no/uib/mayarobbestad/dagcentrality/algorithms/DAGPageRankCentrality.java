@@ -9,12 +9,15 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
+import org.jgrapht.graph.SimpleDirectedGraph;
 
 public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Double> {
 
     private Graph<V, E> graph;
     private Map<V, Double> scores;
+    int ITERATIONS = 3;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
         this.graph = graph;
@@ -43,71 +46,91 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
      * The actual implementation of the centrality measure
      */
     private void run() {
+        Graph<V, E> copy = new SimpleDirectedGraph<>(graph.getVertexSupplier(), graph.getEdgeSupplier(), false);
+
+        Graphs.addGraph(copy, graph);
+
         // TODO: make field variable
-        int iterations = 1;
 
         // init
         Map<V, Double> weights = new HashMap<>();
-        Map<V, Double> copyOfWeights = new HashMap<>();
+
         Queue<V> toDistribute = new LinkedList<>();
+
         Set<V> sources = new HashSet<>();
         Set<V> sinks = new HashSet<>();
+
         Map<V, Set<V>> sourceAncestors = new HashMap<>();
 
-        for (V v : graph.vertexSet()) {
-            if (graph.inDegreeOf(v) == 0) {
+        for (V v : copy.vertexSet()) {
+            if (copy.outDegreeOf(v) == 0) {
+                sinks.add(v);
+            }
+            if (copy.inDegreeOf(v) == 0) {
                 weights.put(v, 1.0);
                 toDistribute.add(v);
                 sources.add(v);
             } else {
                 weights.put(v, 0.0);
             }
-            if (graph.outDegreeOf(v) == 0) {
-                sinks.add(v);
-            }
             sourceAncestors.put(v, new HashSet<>());
         }
 
         // number of iterations in PageRank
-        for (int i = 0; i < iterations; i++) {
+        for (int i = 0; i < ITERATIONS; i++) {
             // forward
             while (!toDistribute.isEmpty()) {
                 V v = toDistribute.poll();
-                for (E edge : graph.outgoingEdgesOf(v)) {
-                    V w = graph.getEdgeTarget(edge);
+
+                for (E edge : copy.outgoingEdgesOf(v)) {
+                    V w = Graphs.getOppositeVertex(copy, edge, v);
+                    // V w = copy.getEdgeTarget(edge);
+
                     Double currentWeight = weights.get(w);
+                    Double ancestorWeight = weights.get(v) / copy.outDegreeOf(v);
+
                     // weight(u)+=weight(v)/deg(v)
                     weights.put(w,
-                            currentWeight + weights.get(v) / graph.outDegreeOf(v));
-                    toDistribute.add(w);
+                            currentWeight + ancestorWeight);
+                    // no duplicates, but perhaps change this to visited
+                    // Since we are working with a DAG, this solution can be good enough
+                    // since there are no cycles in the graph
+                    if (!toDistribute.contains(w)) {
+                        toDistribute.add(w);
+                    }
+                    // adding root ancestors
+                    Set<V> temp = sourceAncestors.get(w);
                     if (sources.contains(v)) {
-                        Set<V> temp = sourceAncestors.get(w);
                         temp.add(v);
-                        sourceAncestors.put(w, temp);
                     } else {
-                        Set<V> ancestors = sourceAncestors.get(v); // get the sources of neighbour
-                        ancestors.addAll(sourceAncestors.get(w)); // merge
-                        sourceAncestors.put(w, ancestors);
+                        for (V a : sourceAncestors.get(v)) {
+                            temp.add(a);
+                        }
                     }
                 }
-                // weight has flowed from that vertex, the weights are reset
-                copyOfWeights.put(v, weights.get(v));
-                System.out.println(weights);
-                weights.put(v, 0.0);
+
             }
 
-            // backwards
-            for (V v : sinks) {
-                Double numSources = (double) sourceAncestors.get(v).size();
-                // Double weight = weights.get(v) ;
-                Double weight = 1.0;
-                for (V source : sourceAncestors.get(v)) {
-                    Double temp = weights.get(source);
-                    weights.put(source, temp + weight / numSources);
+            scores.putAll(weights);
+
+            // prep for the next iteration
+            if (i + 1 < ITERATIONS) {
+                // reset weights
+                for (V v : weights.keySet()) {
+                    weights.put(v, 0.0);
+                }
+                // backwards
+                for (V v : sinks) {
+                    Integer numSources = sourceAncestors.get(v).size();
+                    // Double weight = weights.get(v) ;
+                    Double weight = 1.0;
+                    for (V source : sourceAncestors.get(v)) {
+                        Double temp = weights.get(source);
+                        weights.put(source, temp + weight / numSources); // normalize
+                    }
                 }
             }
+            toDistribute.addAll(sources);
         }
-        // scores.putAll(copyOfWeights);
-        scores.putAll(weights);
     }
 }
