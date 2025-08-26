@@ -1,6 +1,6 @@
 graph [
     directed 1
-    n 4
+    n 3
     m 3
     node [
         id 0
