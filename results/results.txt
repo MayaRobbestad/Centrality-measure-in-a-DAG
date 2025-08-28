@@ -1,8 +1,3 @@
 Dag centrality version 0
-data/synthetic/directed/format/gml/dagpaal.gml = [0:2.5,1:0.5,2:1.25,3:1.5,4:0.25,5:0.625,6:0.625,7:1.75]
-data/synthetic/directed/format/gml/path.gml = [0:1.0,1:1.0,2:1.0,3:1.0]
-
-Dag centrality version 1
-data/synthetic/directed/format/gml/dagpaal.gml = [0:0.0,1:0.0,2:2.0,3:1.5,4:0.5,5:0.0,6:0.0,7:0.0]
-data/synthetic/directed/format/gml/path.gml = [0:0.0,1:2.0,2:1.0,3:0.0]
+data/synthetic/directed/format/gml/random-dag-0.gml = [0:2.5,1:0.5,2:1.25,3:1.5,4:0.25,5:0.625,6:0.625,7:1.75]
 

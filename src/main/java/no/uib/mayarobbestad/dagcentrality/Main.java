@@ -51,7 +51,7 @@ public class Main {
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DAGPAGERANK = true;
-    static final boolean DAGBETWEENNESS = true;
+    static final boolean DAGBETWEENNESS = false;
 
     static int numAlgorithms = 0;
 
@@ -105,7 +105,7 @@ public class Main {
             dataset.addValue(score, graphName, vertex);
         }
 
-        JFreeChart barChart = ChartFactory.createBarChart(algorithmName, "Graphs", "Centrality score",
+        JFreeChart barChart = ChartFactory.createBarChart(algorithmName, "Vertices", "Centrality score",
                 dataset, PlotOrientation.VERTICAL, true, true, false);
         // TODO: change this to safe the results into seperate folders, instead of
         // everything in one folder
@@ -297,12 +297,15 @@ public class Main {
         }
 
         if (DAGPAGERANK) {
+
+            int iterations = 2;
+
             writer.write("Dag centrality version 0\n");
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
                 // TODO: bad practice fix this
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
-                        graphs.get(i));
+                        graphs.get(i), iterations);
                 StringBuilder builder = new StringBuilder();
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");

@@ -15,13 +15,20 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 
 public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Double> {
 
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
+
     private Graph<V, E> graph;
     private Map<V, Double> scores;
-    int ITERATIONS = 5;
+    private int maxIterations;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
+        this(graph, MAX_ITERATIONS_DEFAULT);
+    }
+
+    public DAGPageRankCentrality(Graph<V, E> graph, int maxIterations) {
         this.graph = graph;
         this.scores = new HashMap<>();
+        this.maxIterations = maxIterations;
         run();
     }
 
@@ -77,7 +84,8 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         }
 
         // number of iterations in PageRank
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < maxIterations; i++) {
+            System.out.println("iteration: " + i);
             // forward
             while (!toDistribute.isEmpty()) {
                 V v = toDistribute.poll();
@@ -108,28 +116,37 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                         }
                     }
                 }
-
             }
 
             scores.putAll(weights);
 
             // prep for the next iteration
-            if (i + 1 < ITERATIONS) {
-                // reset weights
+            if (i + 1 < maxIterations) {
+                System.out.println("prep next iteration:" + i);
+                // reset and copy weights
+                HashMap<V, Double> weightsCopy = new HashMap<>();
                 for (V v : weights.keySet()) {
+                    weightsCopy.put(v, weights.get(v));
                     weights.put(v, 0.0);
+
                 }
                 // backwards
                 for (V v : sinks) {
                     Integer numSources = sourceAncestors.get(v).size();
-                    // Double weight = weights.get(v) ;
+
+                    // not normalized
+                    // Double weight = weightsCopy.get(v);
+
+                    // normalized
                     Double weight = 1.0;
+
                     for (V source : sourceAncestors.get(v)) {
                         Double temp = weights.get(source);
                         weights.put(source, temp + weight / numSources); // normalize
                     }
                 }
             }
+
             toDistribute.addAll(sources);
         }
     }
