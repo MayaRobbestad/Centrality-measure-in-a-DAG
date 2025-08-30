@@ -298,7 +298,7 @@ public class Main {
 
         if (DAGPAGERANK) {
 
-            int iterations = 2;
+            int iterations = 1;
 
             writer.write("Dag centrality version 0\n");
             for (int i = 0; i < numGraphs; i++) {

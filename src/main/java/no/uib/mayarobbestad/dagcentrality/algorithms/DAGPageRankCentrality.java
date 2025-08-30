@@ -11,7 +11,9 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Double> {
 
@@ -56,26 +58,26 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         Graph<V, E> copy = new SimpleDirectedGraph<>(graph.getVertexSupplier(), graph.getEdgeSupplier(), false);
 
         Graphs.addGraph(copy, graph);
-
-        // TODO: make field variable
+        TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
 
         // init
-        Map<V, Double> weights = new HashMap<>();
-
-        Queue<V> toDistribute = new LinkedList<>();
 
         Set<V> sources = new HashSet<>();
         Set<V> sinks = new HashSet<>();
-
         Map<V, Set<V>> sourceAncestors = new HashMap<>();
+        Map<V, Double> weights = new HashMap<>();
+        Queue<V> Q = new LinkedList<>(); // vertices that have not distributed their scores yet
+        Map<V, Boolean> visited = new HashMap<V, Boolean>();
+
+        resetVisited(visited);
 
         for (V v : copy.vertexSet()) {
             if (copy.outDegreeOf(v) == 0) {
                 sinks.add(v);
             }
             if (copy.inDegreeOf(v) == 0) {
-                weights.put(v, 1.0);
-                toDistribute.add(v);
+                weights.put(v, 100.0);
+                Q.add(v);
                 sources.add(v);
             } else {
                 weights.put(v, 0.0);
@@ -87,8 +89,10 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         for (int i = 0; i < maxIterations; i++) {
             System.out.println("iteration: " + i);
             // forward
-            while (!toDistribute.isEmpty()) {
-                V v = toDistribute.poll();
+            while (!Q.isEmpty()) {
+                V v = Q.poll();
+                visited.put(v, true);
+                System.out.println("v=" + v);
 
                 for (E edge : copy.outgoingEdgesOf(v)) {
                     V w = Graphs.getOppositeVertex(copy, edge, v);
@@ -103,8 +107,8 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                     // no duplicates, but perhaps change this to visited
                     // Since we are working with a DAG, this solution can be good enough
                     // since there are no cycles in the graph
-                    if (!toDistribute.contains(w)) {
-                        toDistribute.add(w);
+                    if (!visited.get(w) && !Q.contains(w)) {
+                        Q.add(w);
                     }
                     // adding root ancestors
                     Set<V> temp = sourceAncestors.get(w);
@@ -123,19 +127,16 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
             // prep for the next iteration
             if (i + 1 < maxIterations) {
                 System.out.println("prep next iteration:" + i);
-                // reset and copy weights
-                HashMap<V, Double> weightsCopy = new HashMap<>();
+                // reset weights
                 for (V v : weights.keySet()) {
-                    weightsCopy.put(v, weights.get(v));
                     weights.put(v, 0.0);
-
                 }
                 // backwards
                 for (V v : sinks) {
                     Integer numSources = sourceAncestors.get(v).size();
 
                     // not normalized
-                    // Double weight = weightsCopy.get(v);
+                    // Double weight = scores.get(v);
 
                     // normalized
                     Double weight = 1.0;
@@ -147,7 +148,14 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                 }
             }
 
-            toDistribute.addAll(sources);
+            Q.addAll(sources);
         }
     }
+
+    private void resetVisited(Map<V, Boolean> visited) {
+        for (V vertex : graph.vertexSet()) {
+            visited.put(vertex, false);
+        }
+    }
+
 }
