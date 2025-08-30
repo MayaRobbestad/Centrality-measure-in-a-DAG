@@ -58,7 +58,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         Graph<V, E> copy = new SimpleDirectedGraph<>(graph.getVertexSupplier(), graph.getEdgeSupplier(), false);
 
         Graphs.addGraph(copy, graph);
-        TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
 
         // init
 
@@ -87,29 +86,23 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
 
         // number of iterations in PageRank
         for (int i = 0; i < maxIterations; i++) {
+            TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
             System.out.println("iteration: " + i);
             // forward
-            while (!Q.isEmpty()) {
-                V v = Q.poll();
+            while (iterator.hasNext()) {
+                V v = iterator.next();
                 visited.put(v, true);
                 System.out.println("v=" + v);
 
                 for (E edge : copy.outgoingEdgesOf(v)) {
                     V w = Graphs.getOppositeVertex(copy, edge, v);
-                    // V w = copy.getEdgeTarget(edge);
-
-                    Double currentWeight = weights.get(w);
-                    Double ancestorWeight = weights.get(v) / copy.outDegreeOf(v);
 
                     // weight(u)+=weight(v)/deg(v)
+                    Double currentWeight = weights.get(w);
+                    Double ancestorWeight = weights.get(v) / copy.outDegreeOf(v);
                     weights.put(w,
                             currentWeight + ancestorWeight);
-                    // no duplicates, but perhaps change this to visited
-                    // Since we are working with a DAG, this solution can be good enough
-                    // since there are no cycles in the graph
-                    if (!visited.get(w) && !Q.contains(w)) {
-                        Q.add(w);
-                    }
+
                     // adding root ancestors
                     Set<V> temp = sourceAncestors.get(w);
                     if (sources.contains(v)) {
