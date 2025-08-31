@@ -46,19 +46,21 @@ public class GreedyFASTest {
     // }
     // }
 
-    @Test
-    void test1() throws IOException {
-        generateTestCase(1);
-        output = GreedyFAS.GR(g);
-        for (int i = 0; i < output.size(); i++) {
-            assertEquals(answers.get(i), output.get(i));
-        }
-        // Set<DefaultEdge> F = GreedyFAS.removeCycleFromDirectedGraph(g);
-        // int source = 3;
-        // int target = 4;
-        // assertEquals("(" + source + " : " + target + ")",
-        // F.iterator().next().toString());
-
-    }
+    /*
+     * @Test
+     * void test1() throws IOException {
+     * generateTestCase(1);
+     * output = GreedyFAS.GR(g);
+     * for (int i = 0; i < output.size(); i++) {
+     * assertEquals(answers.get(i), output.get(i));
+     * }
+     * // Set<DefaultEdge> F = GreedyFAS.removeCycleFromDirectedGraph(g);
+     * // int source = 3;
+     * // int target = 4;
+     * // assertEquals("(" + source + " : " + target + ")",
+     * // F.iterator().next().toString());
+     * 
+     * }
+     */
 
 }

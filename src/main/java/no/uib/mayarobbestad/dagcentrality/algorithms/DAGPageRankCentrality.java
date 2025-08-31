@@ -22,15 +22,17 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
     private Graph<V, E> graph;
     private Map<V, Double> scores;
     private int maxIterations;
+    private boolean normalized;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
-        this(graph, MAX_ITERATIONS_DEFAULT);
+        this(graph, MAX_ITERATIONS_DEFAULT, true);
     }
 
-    public DAGPageRankCentrality(Graph<V, E> graph, int maxIterations) {
+    public DAGPageRankCentrality(Graph<V, E> graph, int maxIterations, boolean normalized) {
         this.graph = graph;
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
+        this.normalized = true;
         run();
     }
 
@@ -75,7 +77,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                 sinks.add(v);
             }
             if (copy.inDegreeOf(v) == 0) {
-                weights.put(v, 100.0);
+                weights.put(v, 1.0);
                 Q.add(v);
                 sources.add(v);
             } else {
@@ -87,12 +89,11 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         // number of iterations in PageRank
         for (int i = 0; i < maxIterations; i++) {
             TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
-            System.out.println("iteration: " + i);
+
             // forward
             while (iterator.hasNext()) {
                 V v = iterator.next();
                 visited.put(v, true);
-                System.out.println("v=" + v);
 
                 for (E edge : copy.outgoingEdgesOf(v)) {
                     V w = Graphs.getOppositeVertex(copy, edge, v);
@@ -119,7 +120,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
 
             // prep for the next iteration
             if (i + 1 < maxIterations) {
-                System.out.println("prep next iteration:" + i);
+
                 // reset weights
                 for (V v : weights.keySet()) {
                     weights.put(v, 0.0);
@@ -128,11 +129,15 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                 for (V v : sinks) {
                     Integer numSources = sourceAncestors.get(v).size();
 
-                    // not normalized
-                    // Double weight = scores.get(v);
-
-                    // normalized
-                    Double weight = 1.0;
+                    /*
+                     * Double weight;
+                     * if (normalized) {
+                     * weight = 1.0;
+                     * } else {
+                     * weight = scores.get(v);
+                     * }
+                     */
+                    Double weight = scores.get(v);
 
                     for (V source : sourceAncestors.get(v)) {
                         Double temp = weights.get(source);
@@ -140,7 +145,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                     }
                 }
             }
-
             Q.addAll(sources);
         }
     }

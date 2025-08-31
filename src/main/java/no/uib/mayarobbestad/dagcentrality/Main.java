@@ -28,6 +28,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGBetweennessSourceSinkCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
+import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 
 public class Main {
@@ -55,11 +56,25 @@ public class Main {
 
     static int numAlgorithms = 0;
 
+    static int iterations = 1;
+    static boolean USEITERATIONS = true;
+
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-        storeCentralityScoresInFile("results/results.txt", graphs);
-        readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
+        for (Graph<Integer, DefaultEdge> graph : graphs) {
+            GreedyFAS.removeCycleFromDirectedGraph(graph);
+        }
+        // storeCentralityScoresInFile("results/results.txt", graphs);
+        // readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
+
+        for (int i = 1; i < 100; i++) {
+            iterations = i;
+            System.out.println(iterations);
+            storeCentralityScoresInFile("results/results.txt", graphs);
+            readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
+            numAlgorithms = 0; // reset number of algorithms
+        }
 
         // example of topologica sorting
         TopologicalOrderIterator<Integer, DefaultEdge> iterator = new TopologicalOrderIterator<>(graphs.get(0));
@@ -80,6 +95,7 @@ public class Main {
         sc.useLocale(Locale.US);
         for (int a = 0; a < numAlgorithms; a++) {
             String algorithmName = sc.nextLine();
+            System.out.println(algorithmName);
             for (int g = 0; g < graphs.size(); g++) {
                 String graphResult = sc.nextLine();
 
@@ -88,6 +104,7 @@ public class Main {
             }
             sc.nextLine(); // empty line
         }
+        sc.close();
     }
 
     private static void makeChart(String algorithmName, String graphResult, String folder) throws IOException {
@@ -109,8 +126,18 @@ public class Main {
                 dataset, PlotOrientation.VERTICAL, true, true, false);
         // TODO: change this to safe the results into seperate folders, instead of
         // everything in one folder
-        ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + algorithmName + ".png"), barChart, 650,
-                400);
+        if (USEITERATIONS) {
+            ChartUtils.saveChartAsPNG(
+                    new File(folder + "/compareIterations/" + "iteration" + iterations + graphName + algorithmName
+                            + ".png"),
+                    barChart,
+                    650,
+                    400);
+        } else {
+            ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + algorithmName + ".png"), barChart, 650,
+                    400);
+
+        }
     }
 
     /**
@@ -298,14 +325,12 @@ public class Main {
 
         if (DAGPAGERANK) {
 
-            int iterations = 1;
-
             writer.write("Dag centrality version 0\n");
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
                 // TODO: bad practice fix this
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
-                        graphs.get(i), iterations);
+                        graphs.get(i), iterations, false);
                 StringBuilder builder = new StringBuilder();
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
@@ -338,9 +363,7 @@ public class Main {
             writer.write("\n");
             numAlgorithms++;
         }
-
         writer.close();
-
     }
 
     /**
