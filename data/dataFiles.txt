@@ -1,5 +1,11 @@
 1
 data/software/jmail.gml
-data/synthetic/directed/format/gml/random-dag-4.gml
-data/synthetic/directed/format/gml/random-dag-0.gml
 data/synthetic/directed/format/gml/random-dag-3.gml
+data/blockchain/bitcoin.gml
+data/synthetic/directed/format/gml/random-dag-0.gml
+data/synthetic/directed/format/gml/path.gml
+data/synthetic/directed/format/gml/star-in.gml
+data/synthetic/directed/format/gml/star-out.gml
+
+
+data/synthetic/directed/format/gml/random-dag-4.gml

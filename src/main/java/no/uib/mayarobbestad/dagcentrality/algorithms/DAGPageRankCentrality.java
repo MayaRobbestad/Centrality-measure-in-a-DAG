@@ -32,7 +32,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         this.graph = graph;
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
-        this.normalized = true;
+        this.normalized = normalized;
         run();
     }
 
@@ -68,9 +68,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         Map<V, Set<V>> sourceAncestors = new HashMap<>();
         Map<V, Double> weights = new HashMap<>();
         Queue<V> Q = new LinkedList<>(); // vertices that have not distributed their scores yet
-        Map<V, Boolean> visited = new HashMap<V, Boolean>();
-
-        resetVisited(visited);
 
         for (V v : copy.vertexSet()) {
             if (copy.outDegreeOf(v) == 0) {
@@ -93,7 +90,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
             // forward
             while (iterator.hasNext()) {
                 V v = iterator.next();
-                visited.put(v, true);
 
                 for (E edge : copy.outgoingEdgesOf(v)) {
                     V w = Graphs.getOppositeVertex(copy, edge, v);
@@ -129,15 +125,14 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                 for (V v : sinks) {
                     Integer numSources = sourceAncestors.get(v).size();
 
-                    /*
-                     * Double weight;
-                     * if (normalized) {
-                     * weight = 1.0;
-                     * } else {
-                     * weight = scores.get(v);
-                     * }
-                     */
-                    Double weight = scores.get(v);
+                    Double weight;
+                    if (normalized) {
+                        weight = 1.0;
+                    } else {
+                        weight = scores.get(v);
+                    }
+
+                    // Double weight = scores.get(v);
 
                     for (V source : sourceAncestors.get(v)) {
                         Double temp = weights.get(source);

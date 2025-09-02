@@ -1,6 +1,7 @@
 package no.uib.mayarobbestad.dagcentrality;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -58,29 +60,61 @@ public class Main {
 
     static int iterations = 1;
     static boolean USEITERATIONS = true;
+    static int MAXITERATIONS = 20;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-        for (Graph<Integer, DefaultEdge> graph : graphs) {
-            GreedyFAS.removeCycleFromDirectedGraph(graph);
-        }
-        // storeCentralityScoresInFile("results/results.txt", graphs);
-        // readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
 
-        for (int i = 1; i < 100; i++) {
+        for (Graph<Integer, DefaultEdge> graph : graphs) {
+            Set<DefaultEdge> removed = GreedyFAS.removeCycleFromDirectedGraph(graph);
+            System.out.println("removed:" + removed);
+        }
+
+        for (int i = 1; i < MAXITERATIONS; i++) {
             iterations = i;
-            System.out.println(iterations);
             storeCentralityScoresInFile("results/results.txt", graphs);
             readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
             numAlgorithms = 0; // reset number of algorithms
         }
 
+        // findNMostCentralVertices("results/results.txt", 5);
+
         // example of topologica sorting
-        TopologicalOrderIterator<Integer, DefaultEdge> iterator = new TopologicalOrderIterator<>(graphs.get(0));
-        while (iterator.hasNext()) {
-            System.out.println(iterator.next());
+        /*
+         * TopologicalOrderIterator<Integer, DefaultEdge> iterator = new
+         * TopologicalOrderIterator<>(graphs.get(0));
+         * while (iterator.hasNext()) {
+         * System.out.println(iterator.next());
+         * }
+         */
+    }
+
+    /**
+     * Find the n most central vertices in the graph
+     * 
+     * @param file
+     * @param i
+     * @throws FileNotFoundException
+     */
+    private static void findNMostCentralVertices(String file, int i) throws FileNotFoundException {
+        Scanner sc = new Scanner(new FileReader(new File(file)));
+        sc.useLocale(Locale.US);
+        String algorithmName = sc.nextLine();
+        String graphResult = sc.nextLine();
+
+        int n = graphResult.strip().split("=")[0].split("/").length;
+        String graphName = graphResult.strip().split("=")[0].split("/")[n - 1].replaceAll(".gml", "");
+        int resultsLength = graphResult.strip().split("=")[1].length();
+        String results = graphResult.strip().split("=")[1].substring(2, resultsLength - 1);
+        // .replaceAll("[", "").replaceAll("]", "");
+
+        for (String pair : results.split(",")) {
+            Integer vertex = Integer.parseInt(pair.split(":")[0]);
+            Double score = Double.parseDouble(pair.split(":")[1]);
+
         }
+
     }
 
     /**
@@ -95,7 +129,6 @@ public class Main {
         sc.useLocale(Locale.US);
         for (int a = 0; a < numAlgorithms; a++) {
             String algorithmName = sc.nextLine();
-            System.out.println(algorithmName);
             for (int g = 0; g < graphs.size(); g++) {
                 String graphResult = sc.nextLine();
 
@@ -134,7 +167,9 @@ public class Main {
                     650,
                     400);
         } else {
-            ChartUtils.saveChartAsPNG(new File(folder + "/" + graphName + algorithmName + ".png"), barChart, 650,
+            ChartUtils.saveChartAsPNG(new File(folder + "/finalMeasure/" + graphName + algorithmName + ".png"),
+                    barChart,
+                    650,
                     400);
 
         }
@@ -325,12 +360,12 @@ public class Main {
 
         if (DAGPAGERANK) {
 
-            writer.write("Dag centrality version 0\n");
+            writer.write("Dag PageRank Centrality\n");
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
                 // TODO: bad practice fix this
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
-                        graphs.get(i), iterations, false);
+                        graphs.get(i), iterations, true);
                 StringBuilder builder = new StringBuilder();
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
