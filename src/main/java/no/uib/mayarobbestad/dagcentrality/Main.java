@@ -60,7 +60,7 @@ public class Main {
 
     static int iterations = 1;
     static boolean USEITERATIONS = true;
-    static int MAXITERATIONS = 20;
+    static int MAXITERATIONS = 3;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);

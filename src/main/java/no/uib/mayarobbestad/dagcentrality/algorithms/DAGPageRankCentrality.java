@@ -1,9 +1,11 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -58,89 +60,101 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
      */
     private void run() {
         Graph<V, E> copy = new SimpleDirectedGraph<>(graph.getVertexSupplier(), graph.getEdgeSupplier(), false);
-
         Graphs.addGraph(copy, graph);
-
-        // init
 
         Set<V> sources = new HashSet<>();
         Set<V> sinks = new HashSet<>();
-        Map<V, Set<V>> sourceAncestors = new HashMap<>();
-        Map<V, Double> weights = new HashMap<>();
-        Queue<V> Q = new LinkedList<>(); // vertices that have not distributed their scores yet
+
+        HashMap<V, Double> totalWeight = new HashMap<>();
+
+        List<V> topologicalList = new ArrayList<>();
+        TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
+        while (iterator.hasNext()) {
+            topologicalList.add(iterator.next());
+        }
+
+        System.out.println(topologicalList);
+
+        Map<V, Map<V, Double>> weightReceivedFromAncestor = new HashMap<>();
+        for (V v : copy.vertexSet()) {
+            weightReceivedFromAncestor.put(v, new HashMap<>());
+            if (copy.inDegreeOf(v) == 0) {
+                sources.add(v);
+            }
+        }
 
         for (V v : copy.vertexSet()) {
             if (copy.outDegreeOf(v) == 0) {
                 sinks.add(v);
             }
             if (copy.inDegreeOf(v) == 0) {
-                weights.put(v, 1.0);
-                Q.add(v);
-                sources.add(v);
+                totalWeight.put(v, 1.0);
             } else {
-                weights.put(v, 0.0);
+                totalWeight.put(v, 0.0);
             }
-            sourceAncestors.put(v, new HashSet<>());
+            for (V s : sources) {
+                // the source is their own ancestor
+                if (v.equals(s)) {
+                    weightReceivedFromAncestor.get(v).put(s, 1.0);
+                } else {
+                    weightReceivedFromAncestor.get(v).put(s, 0.0);
+                }
+            }
         }
-
         // number of iterations in PageRank
         for (int i = 0; i < maxIterations; i++) {
-            TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
-
             // forward
-            while (iterator.hasNext()) {
-                V v = iterator.next();
+            for (int j = 0; j < topologicalList.size(); j++) {
+
+                V v = topologicalList.get(j);
+                // the score this vertex will distribute to their outdegree neighbours
 
                 for (E edge : copy.outgoingEdgesOf(v)) {
                     V w = Graphs.getOppositeVertex(copy, edge, v);
+                    // iterate over all the scores of v received from each source vertex
+                    Double weight = totalWeight.get(w);
+                    for (V s : sources) {
+                        Double scoreFromGivenSource = weightReceivedFromAncestor.get(v).get(s);
+                        // no need to do all the rest is the score is 0
+                        if (scoreFromGivenSource > 0) {
+                            Double toDistributeFromSource = scoreFromGivenSource / (double) copy.outDegreeOf(v);
+                            // updates the weight received from the source vertex s
+                            Double updateScore = weightReceivedFromAncestor.get(w).get(s) + toDistributeFromSource;
+                            weightReceivedFromAncestor.get(w).put(s, updateScore);
+                            weight += toDistributeFromSource;
+                        }
+                    }
+                    totalWeight.put(w, weight);
+                }
+            }
+            System.out.println("iteration " + i + ":" + weightReceivedFromAncestor);
+            scores.putAll(totalWeight);
+            for (V v : totalWeight.keySet()) {
+                totalWeight.put(v, 0.0);
+            }
 
-                    // weight(u)+=weight(v)/deg(v)
-                    Double currentWeight = weights.get(w);
-                    Double ancestorWeight = weights.get(v) / copy.outDegreeOf(v);
-                    weights.put(w,
-                            currentWeight + ancestorWeight);
-
-                    // adding root ancestors
-                    Set<V> temp = sourceAncestors.get(w);
-                    if (sources.contains(v)) {
-                        temp.add(v);
-                    } else {
-                        for (V a : sourceAncestors.get(v)) {
-                            temp.add(a);
+            if (i + 1 < maxIterations) {
+                // update the weight each source at a time
+                for (V source : sources) {
+                    Double newWeight = 0.0;
+                    for (V sink : sinks) {
+                        // adds part/whole back to the source
+                        newWeight += weightReceivedFromAncestor.get(sink).get(source) / scores.get(sink);
+                    }
+                    totalWeight.put(source, newWeight);
+                }
+                // reset scores to be ready for the next iteration
+                for (V v : copy.vertexSet()) {
+                    for (V s : sources) {
+                        // receive the score of the previous iteration
+                        if (v.equals(s)) {
+                            weightReceivedFromAncestor.get(v).put(s, totalWeight.get(s));
+                        } else {
+                            weightReceivedFromAncestor.get(v).put(s, 0.0);
                         }
                     }
                 }
             }
-
-            scores.putAll(weights);
-
-            // prep for the next iteration
-            if (i + 1 < maxIterations) {
-
-                // reset weights
-                for (V v : weights.keySet()) {
-                    weights.put(v, 0.0);
-                }
-                // backwards
-                for (V v : sinks) {
-                    Integer numSources = sourceAncestors.get(v).size();
-
-                    Double weight;
-                    if (normalized) {
-                        weight = 1.0;
-                    } else {
-                        weight = scores.get(v);
-                    }
-
-                    // Double weight = scores.get(v);
-
-                    for (V source : sourceAncestors.get(v)) {
-                        Double temp = weights.get(source);
-                        weights.put(source, temp + weight / numSources); // normalize
-                    }
-                }
-            }
-            Q.addAll(sources);
         }
     }
 
