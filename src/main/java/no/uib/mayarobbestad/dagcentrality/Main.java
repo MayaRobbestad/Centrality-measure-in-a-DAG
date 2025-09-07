@@ -59,8 +59,8 @@ public class Main {
     static int numAlgorithms = 0;
 
     static int iterations = 1;
-    static boolean USEITERATIONS = true;
-    static int MAXITERATIONS = 3;
+    static boolean USEITERATIONS = false;
+    static int MAXITERATIONS = 1;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
@@ -161,7 +161,7 @@ public class Main {
         // everything in one folder
         if (USEITERATIONS) {
             ChartUtils.saveChartAsPNG(
-                    new File(folder + "/compareIterations/" + "iteration" + iterations + graphName + algorithmName
+                    new File(folder + "/compareIterations/" + graphName + algorithmName + "iteration" + iterations
                             + ".png"),
                     barChart,
                     650,

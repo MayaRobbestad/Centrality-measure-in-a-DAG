@@ -17,6 +17,8 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
+import no.uib.mayarobbestad.dagcentrality.datastructures.VertexCentralityPair;
+
 public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Double> {
 
     private static final int MAX_ITERATIONS_DEFAULT = 100;
@@ -25,6 +27,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
     private Map<V, Double> scores;
     private int maxIterations;
     private boolean normalized;
+    private VertexCentralityPair<V> pair;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
         this(graph, MAX_ITERATIONS_DEFAULT, true);
@@ -111,12 +114,15 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
 
                 for (E edge : copy.outgoingEdgesOf(v)) {
                     V w = Graphs.getOppositeVertex(copy, edge, v);
+
                     // iterate over all the scores of v received from each source vertex
                     Double weight = totalWeight.get(w);
                     for (V s : sources) {
                         Double scoreFromGivenSource = weightReceivedFromAncestor.get(v).get(s);
-                        // no need to do all the rest is the score is 0
+                        // no need to do all the rest if the score is 0
                         if (scoreFromGivenSource > 0) {
+                            // v distributes the score received from a source evenly amongst their outdegree
+                            // neighbourhood
                             Double toDistributeFromSource = scoreFromGivenSource / (double) copy.outDegreeOf(v);
                             // updates the weight received from the source vertex s
                             Double updateScore = weightReceivedFromAncestor.get(w).get(s) + toDistributeFromSource;
