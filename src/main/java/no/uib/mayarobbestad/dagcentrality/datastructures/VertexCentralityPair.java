@@ -10,6 +10,14 @@ public class VertexCentralityPair<V> implements Comparable {
         this.score = score;
     }
 
+    public V getVertex() {
+        return vertex;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -32,7 +40,12 @@ public class VertexCentralityPair<V> implements Comparable {
             return 1;
 
         return 0; // then they must be equal
+    }
 
+    @Override
+    public String toString() {
+
+        return "(" + vertex + "," + score + ")";
     }
 
 }

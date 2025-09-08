@@ -60,7 +60,8 @@ public class Main {
 
     static int iterations = 1;
     static boolean USEITERATIONS = false;
-    static int MAXITERATIONS = 1;
+
+    static int MAXITERATIONS = 15;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
@@ -364,8 +365,8 @@ public class Main {
             for (int i = 0; i < numGraphs; i++) {
                 writer.write(graphDirectory.get(i) + " = [");
                 // TODO: bad practice fix this
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
-                        graphs.get(i), iterations, true);
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(graphs.get(i),
+                        iterations, true);
                 StringBuilder builder = new StringBuilder();
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
@@ -374,6 +375,7 @@ public class Main {
                 builder.deleteCharAt(n - 1);
                 writer.write(builder.toString());
                 writer.write("]\n");
+
             }
             writer.write("\n");
             numAlgorithms++;

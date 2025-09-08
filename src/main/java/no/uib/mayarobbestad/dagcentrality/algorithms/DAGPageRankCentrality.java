@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         this.maxIterations = maxIterations;
         this.normalized = normalized;
         run();
+        System.out.println("The highest x centrality scores are: " + findXHighestCentralityScores(5));
     }
 
     @Override
@@ -168,6 +170,43 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         for (V vertex : graph.vertexSet()) {
             visited.put(vertex, false);
         }
+    }
+
+    /**
+     * Given a list of tupples (VertexCentralityPair), (vertex, score)
+     * What vertices have the highest scores
+     * 
+     * @param x
+     * @return
+     */
+    private PriorityQueue<VertexCentralityPair<V>> findXHighestCentralityScores(int x) {
+        int n = 0;
+        List<VertexCentralityPair<V>> l1 = new ArrayList<>();
+        // expect the smallest to be go first in the queue
+        PriorityQueue<VertexCentralityPair<V>> nSmallest = new PriorityQueue<>();
+        System.out.println("n: " + n + " x: " + x);
+        for (V v : graph.vertexSet()) {
+            VertexCentralityPair<V> current = new VertexCentralityPair<>(v, scores.get(v));
+            l1.add(current);
+            if (n < x) {
+                nSmallest.add(current);
+                n++;
+            }
+            if (n == x) {
+                if (current.getScore() > nSmallest.peek().getScore()) {
+                    // substiture the vertex with the smallest score, with another vertex with a
+                    // higher score
+                    nSmallest.poll();
+                    nSmallest.add(current);
+                }
+
+            }
+            // if n > x ?
+
+        }
+        Collections.sort(l1);
+        System.out.println(l1);
+        return nSmallest;
     }
 
 }
