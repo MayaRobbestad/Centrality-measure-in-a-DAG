@@ -1,10 +1,6 @@
 package algorithms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -13,6 +9,8 @@ import java.util.Map;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.graph.DefaultEdge;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
@@ -30,7 +28,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresNormalizedIteration1() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, Double> algorithm = new DAGPageRankCentrality<>(graph, 1, true);
+        VertexScoringAlgorithm<Integer, Double> algorithm = new DAGPageRankCentrality<>(graph, 1);
         Map<Integer, Double> scores = algorithm.getScores();
         Map<Integer, Double> expectedScores = new HashMap<>();
 
@@ -50,7 +48,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresNormalizedIteration2() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, Double> algorithm = new DAGPageRankCentrality<>(graph, 2, true);
+        VertexScoringAlgorithm<Integer, Double> algorithm = new DAGPageRankCentrality<>(graph, 2);
         Map<Integer, Double> scores = algorithm.getScores();
         Map<Integer, Double> expectedScores = new HashMap<>();
 
@@ -72,7 +70,7 @@ public class DAGPageRankTest {
     public void testScoresNormalizedNIterations() throws FileNotFoundException {
         int n = 34;
 
-        VertexScoringAlgorithm<Integer, Double> algorithm = new DAGPageRankCentrality<>(graph, n, true);
+        VertexScoringAlgorithm<Integer, Double> algorithm = new DAGPageRankCentrality<>(graph, n);
         Map<Integer, Double> scores = algorithm.getScores();
         Map<Integer, Double> expectedScores = new HashMap<>();
 

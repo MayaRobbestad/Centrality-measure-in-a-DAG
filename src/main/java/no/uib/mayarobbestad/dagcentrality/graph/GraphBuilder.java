@@ -1,18 +1,18 @@
 package no.uib.mayarobbestad.dagcentrality.graph;
 
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.graph.SimpleGraph;
-import org.jgrapht.nio.gml.GmlImporter;
-import org.jgrapht.util.SupplierUtil;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Scanner;
+
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
+import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.nio.gml.GmlImporter;
+import org.jgrapht.util.SupplierUtil;
 
 /**
  * This class reads a graph from a file and stores the data in a JGraphT graph

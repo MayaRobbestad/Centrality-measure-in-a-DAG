@@ -4,17 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
@@ -29,16 +26,17 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
     private int maxIterations;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
-        this(graph, MAX_ITERATIONS_DEFAULT, true);
+        this(graph, MAX_ITERATIONS_DEFAULT);
     }
 
-    public DAGPageRankCentrality(Graph<V, E> graph, int maxIterations, boolean normalized) {
+    public DAGPageRankCentrality(Graph<V, E> graph, int maxIterations) {
         this.graph = graph;
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
         run();
         // TODO: find a way to do this better
-        System.out.println("The highest x centrality scores are: " + findXHighestCentralityScores(3));
+        // System.out.println("The highest x centrality scores are: " +
+        // findXHighestCentralityScores(2));
     }
 
     @Override
@@ -175,6 +173,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         PriorityQueue<VertexCentralityPair<V>> xHighestScores = new PriorityQueue<>();
         for (V v : graph.vertexSet()) {
             VertexCentralityPair<V> current = new VertexCentralityPair<>(v, scores.get(v));
+            System.out.println("v: " + v + " score: " + scores.get(v));
             if (xHighestScores.size() < x) {
                 xHighestScores.add(current);
             }
