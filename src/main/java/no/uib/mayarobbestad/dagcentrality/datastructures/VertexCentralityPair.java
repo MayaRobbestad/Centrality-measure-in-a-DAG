@@ -30,21 +30,17 @@ public class VertexCentralityPair<V> implements Comparable {
 
     @Override
     public int compareTo(Object obj) {
-
         VertexCentralityPair<V> other = (VertexCentralityPair<V>) obj;
-
         if (this.score < other.score) {
             return -1;
         }
         if (this.score > other.score)
             return 1;
-
         return 0; // then they must be equal
     }
 
     @Override
     public String toString() {
-
         return "(" + vertex + "," + score + ")";
     }
 

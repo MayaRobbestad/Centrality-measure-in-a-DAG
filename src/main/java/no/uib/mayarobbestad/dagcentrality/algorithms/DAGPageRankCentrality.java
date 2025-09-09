@@ -27,8 +27,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
     private Graph<V, E> graph;
     private Map<V, Double> scores;
     private int maxIterations;
-    private boolean normalized;
-    private VertexCentralityPair<V> pair;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
         this(graph, MAX_ITERATIONS_DEFAULT, true);
@@ -38,9 +36,9 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         this.graph = graph;
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
-        this.normalized = normalized;
         run();
-        System.out.println("The highest x centrality scores are: " + findXHighestCentralityScores(5));
+        // TODO: find a way to do this better
+        System.out.println("The highest x centrality scores are: " + findXHighestCentralityScores(3));
     }
 
     @Override
@@ -57,7 +55,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
         return getScores().get(v);
-
     }
 
     /**
@@ -166,12 +163,6 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         }
     }
 
-    private void resetVisited(Map<V, Boolean> visited) {
-        for (V vertex : graph.vertexSet()) {
-            visited.put(vertex, false);
-        }
-    }
-
     /**
      * Given a list of tupples (VertexCentralityPair), (vertex, score)
      * What vertices have the highest scores
@@ -180,33 +171,21 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
      * @return
      */
     private PriorityQueue<VertexCentralityPair<V>> findXHighestCentralityScores(int x) {
-        int n = 0;
-        List<VertexCentralityPair<V>> l1 = new ArrayList<>();
-        // expect the smallest to be go first in the queue
-        PriorityQueue<VertexCentralityPair<V>> nSmallest = new PriorityQueue<>();
-        System.out.println("n: " + n + " x: " + x);
+        // the smallest elements is the first in the PQ
+        PriorityQueue<VertexCentralityPair<V>> xHighestScores = new PriorityQueue<>();
         for (V v : graph.vertexSet()) {
             VertexCentralityPair<V> current = new VertexCentralityPair<>(v, scores.get(v));
-            l1.add(current);
-            if (n < x) {
-                nSmallest.add(current);
-                n++;
+            if (xHighestScores.size() < x) {
+                xHighestScores.add(current);
             }
-            if (n == x) {
-                if (current.getScore() > nSmallest.peek().getScore()) {
-                    // substiture the vertex with the smallest score, with another vertex with a
-                    // higher score
-                    nSmallest.poll();
-                    nSmallest.add(current);
+            if (xHighestScores.size() == x) {
+                if (current.getScore() > xHighestScores.peek().getScore()) {
+                    // replace vertex with smallest score, to vertex with higher score
+                    xHighestScores.add(current);
+                    xHighestScores.poll();
                 }
-
             }
-            // if n > x ?
-
         }
-        Collections.sort(l1);
-        System.out.println(l1);
-        return nSmallest;
+        return xHighestScores;
     }
-
 }
