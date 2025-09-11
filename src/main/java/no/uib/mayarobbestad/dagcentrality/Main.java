@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.Set;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -74,10 +73,7 @@ public class Main {
         }
 
         storeCentralityScoresInCSV("results/results.csv", graphs);
-
         readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
-
-        // findNMostCentralVertices("results/results.txt", 5);
 
         // example of topologica sorting
         /*
@@ -114,9 +110,6 @@ public class Main {
                         dataset.addValue(score, graphName + " on iteration " + i, v);
                     }
 
-                    System.out.println("algorithm " + currentAlgorithmName + " on graph " + currentGraphName
-                            + " needs total " + iterationsNeededPerAlgorithm.get(a) + " iterations");
-
                     JFreeChart barChart = ChartFactory.createBarChart(
                             currentAlgorithmName + " algorithm on " + currentGraphName + " graph",
                             "Vertices", "Centrality score",
@@ -124,7 +117,7 @@ public class Main {
 
                     ChartUtils.saveChartAsPNG(
                             new File(
-                                    folder + "/all/" + currentAlgorithmName + "-" + currentGraphName + "-iteration-" + i
+                                    folder + "/" + currentAlgorithmName + "-" + currentGraphName + "-iteration-" + i
                                             + ".png"),
                             barChart,
                             650,
@@ -385,291 +378,6 @@ public class Main {
     }
 
     /**
-     * Reads the results in the results file, and makes a chart based on the
-     * centrality scores.
-     * 
-     * @param string
-     * @throws IOException
-     */
-    private static void readResultsAndStoreScoresInChart(String file, String folder) throws IOException {
-        Scanner sc = new Scanner(new FileReader(new File(file)));
-        sc.useLocale(Locale.US);
-        for (int a = 0; a < numAlgorithms; a++) {
-            String algorithmName = sc.nextLine();
-            for (int g = 0; g < graphs.size(); g++) {
-                String graphResult = sc.nextLine();
-                makeChart(algorithmName, graphResult, folder);
-            }
-            sc.nextLine(); // empty line
-        }
-        sc.close();
-    }
-
-    private static void makeChart(String algorithmName, String graphResult, String folder) throws IOException {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        String[] parts = graphResult.strip().split("="); // divide into path and results
-        String path = parts[0].trim(); // the path of the graph
-        String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
-
-        String resultList = parts[1].trim();
-        String results = resultList.substring(1, resultList.length() - 1); // remove [ and ]
-
-        for (String pair : results.split(",")) {
-            String[] entry = pair.split(":");
-            Integer vertex = Integer.parseInt(entry[0]);
-            Double score = Double.parseDouble(entry[1]);
-            dataset.addValue(score, graphName, vertex);
-        }
-
-        JFreeChart barChart = ChartFactory.createBarChart(algorithmName, "Vertices", "Centrality score",
-                dataset, PlotOrientation.VERTICAL, true, true, false);
-
-        // TODO: change this to safe the results into seperate folders, instead of
-        // everything in one folder
-        if (USEITERATIONS) {
-            ChartUtils.saveChartAsPNG(
-                    new File(folder + "/compareIterations/" + graphName + algorithmName + "iteration" + iteration
-                            + ".png"),
-                    barChart,
-                    650,
-                    400);
-        } else {
-            ChartUtils.saveChartAsPNG(new File(folder + "/finalMeasure/" + graphName + algorithmName + ".png"),
-                    barChart,
-                    650,
-                    400);
-        }
-    }
-
-    /**
-     * Runs the algorithms that are set to true. These algorithms are stated as
-     * field variables.
-     * The results of the centrality measures are then stored in the file given
-     * 
-     * @param string
-     * @throws IOException
-     */
-    private static void storeCentralityScoresInFile(String file, ArrayList<Graph<Integer, DefaultEdge>> graphs)
-            throws IOException {
-        FileWriter writer = new FileWriter(file);
-        int numGraphs = graphs.size();
-
-        if (DEGREE) {
-            /*
-             * Also possible, instead of writing the name directly
-             * centralityAlgorithm = new DegreeCentrality<>(graphs.get(0), true);
-             * writer.write(centralityAlgorithm.getClass().getSimpleName() + "\n");
-             */
-            writer.write("Degree centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                // makes sure that all vertices are written in the file, eventhopugh we might
-                // have deleted some vertieces previously
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DegreeCentrality<>(graphs.get(i),
-                        false, true);
-
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (INDEGREE) {
-            writer.write("Indegree centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DegreeCentrality<>(graphs.get(i),
-                        true, true);
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (OUTDEGREE) {
-            writer.write("Outdegree centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DegreeCentrality<>(graphs.get(i),
-                        false, true);
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (INHARMONIC) {
-            writer.write("In-Harmonic centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new HarmonicCentrality<>(graphs.get(i),
-                        true, true);
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (OUTHARMONIC) {
-            writer.write("Out-Harmonic centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new HarmonicCentrality<>(graphs.get(i),
-                        false, true);
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-
-        if (BETWEENNESS) {
-            writer.write("Betweenness centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new BetweennessCentrality<>(graphs.get(i),
-                        true);
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (EIGENVECTOR) {
-            writer.write("Eigenvector centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new EigenvectorCentrality<>(
-                        graphs.get(i));
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (KATZ) {
-            writer.write("Katz centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new KatzCentrality<>(graphs.get(i));
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        if (PAGERANK) {
-            writer.write("PageRank centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new PageRank<>(graphs.get(i));
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-
-        if (DAGPAGERANK) {
-
-            writer.write("Dag PageRank Centrality\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                // TODO: bad practice fix this
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(graphs.get(i),
-                        iteration);
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-
-        if (DAGBETWEENNESS) {
-            writer.write("Dag centrality version 1\n");
-            for (int i = 0; i < numGraphs; i++) {
-                writer.write(graphDirectory.get(i) + " = [");
-                // TODO: bad practice fix this
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGBetweennessSourceSinkCentrality<>(
-                        graphs.get(i));
-                StringBuilder builder = new StringBuilder();
-                for (Integer v : graphs.get(i).vertexSet()) {
-                    builder.append(v + ":" + centralityAlgorithm.getVertexScore(v) + ",");
-                }
-                int n = builder.length();
-                builder.deleteCharAt(n - 1);
-                writer.write(builder.toString());
-                writer.write("]\n");
-            }
-            writer.write("\n");
-            numAlgorithms++;
-        }
-        writer.close();
-    }
-
-    /**
      * Given a list of graphs stored as an edge list.
      * The method reads the graphs and stores the graphs in an array of graph
      * objects.
@@ -732,5 +440,4 @@ public class Main {
             System.out.println(graphs.get(i));
         }
     }
-
 }

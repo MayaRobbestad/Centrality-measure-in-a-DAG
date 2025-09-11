@@ -73,7 +73,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
             topologicalList.add(iterator.next());
         }
 
-        System.out.println(topologicalList);
+        // System.out.println(topologicalList);
 
         Map<V, Map<V, Double>> weightReceivedFromAncestor = new HashMap<>();
         for (V v : copy.vertexSet()) {
@@ -130,7 +130,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                     totalWeight.put(w, weight);
                 }
             }
-            System.out.println("iteration " + i + ":" + weightReceivedFromAncestor);
+            // System.out.println("iteration " + i + ":" + weightReceivedFromAncestor);
             scores.putAll(totalWeight);
             for (V v : totalWeight.keySet()) {
                 totalWeight.put(v, 0.0);
@@ -173,7 +173,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         PriorityQueue<VertexCentralityPair<V>> xHighestScores = new PriorityQueue<>();
         for (V v : graph.vertexSet()) {
             VertexCentralityPair<V> current = new VertexCentralityPair<>(v, scores.get(v));
-            System.out.println("v: " + v + " score: " + scores.get(v));
+            // System.out.println("v: " + v + " score: " + scores.get(v));
             if (xHighestScores.size() < x) {
                 xHighestScores.add(current);
             }
