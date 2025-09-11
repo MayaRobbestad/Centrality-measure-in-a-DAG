@@ -41,13 +41,13 @@ public class Main {
 
     // The centrality algorithms to be run
     static final boolean DEGREE = true;
-    static final boolean INDEGREE = false;
-    static final boolean OUTDEGREE = false;
-    static final boolean CLOSENESS = false;
-    static final boolean INHARMONIC = false; // variation of closeness
-    static final boolean OUTHARMONIC = false;
-    static final boolean BETWEENNESS = false;
-    static final boolean EIGENVECTOR = false;
+    static final boolean INDEGREE = true;
+    static final boolean OUTDEGREE = true;
+    static final boolean CLOSENESS = true;
+    static final boolean INHARMONIC = true; // variation of closeness
+    static final boolean OUTHARMONIC = true;
+    static final boolean BETWEENNESS = true;
+    static final boolean EIGENVECTOR = true;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DAGPAGERANK = true;
@@ -60,7 +60,9 @@ public class Main {
     static int iteration = 0;
     static boolean USEITERATIONS = true;
 
+    // algorithm will run MAXITERATIONS - 1 times
     static int MAXITERATIONS = 5; // the number of times the algorithm will run, applicable for PageRank
+    // algorithm will run 1 iteration
     static int DEFAULTITERATIONS = 1;
 
     public static void main(String[] args) throws IOException {
@@ -68,29 +70,12 @@ public class Main {
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
 
         for (Graph<Integer, DefaultEdge> graph : graphs) {
-            Set<DefaultEdge> removed = GreedyFAS.removeCycleFromDirectedGraph(graph);
-            System.out.println("removed:" + removed);
+            GreedyFAS.removeCycleFromDirectedGraph(graph);
         }
-
-        // storeCentralityScoresInFile("results/results.txt", graphs);
 
         storeCentralityScoresInCSV("results/results.csv", graphs);
 
         readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
-
-        // readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
-
-        // only works for PageRank, when we want to visualize the iterations
-
-        /*
-         * for (int i = 1; i < MAXITERATIONS; i++) {
-         * iteration = i;
-         * storeCentralityScoresInFile("results/results.txt", graphs);
-         * // storeCentralityScoresInCSV("results/results.csv", graphs);
-         * readResultsAndStoreScoresInChart("results/results.txt", "results/charts");
-         * numAlgorithms = 0; // reset number of algorithms
-         * }
-         */
 
         // findNMostCentralVertices("results/results.txt", 5);
 
@@ -112,28 +97,28 @@ public class Main {
             for (int g = 0; g < graphs.size(); g++) {
                 for (int i = 0; i < iterationsNeededPerAlgorithm.get(a); i++) {
                     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-                    String[] column = sc.nextLine().strip().split(",");
+                    String currentAlgorithmName = "";
+                    String currentGraphName = "";
 
-                    String currentAlgorithmName = column[0];
-                    String currentGraphName = column[1];
-
-                    Set<Integer> iterable = graphs.get(g).vertexSet();
-                    int count = 0;
-                    for (Integer v : iterable) {
+                    for (Integer v : graphs.get(g).vertexSet()) {
+                        String[] column = sc.nextLine().strip().split(",");
                         String algorithmName = column[0];
                         String graphName = column[1];
                         Integer iteration = Integer.parseInt(column[2]);
                         Integer vertex = Integer.parseInt(column[3]);
                         Double score = Double.parseDouble(column[4]);
-                        dataset.addValue(score, graphName, v);
-                        // TODO
-                        count++;
-                        if (count < iterable.size() - 1) {
-                            column = sc.nextLine().strip().split(",");
+                        if (currentAlgorithmName.equals("") && currentGraphName.equals("")) {
+                            currentAlgorithmName = algorithmName;
+                            currentGraphName = graphName;
                         }
+                        dataset.addValue(score, graphName + " on iteration " + i, v);
                     }
 
-                    JFreeChart barChart = ChartFactory.createBarChart(currentGraphName,
+                    System.out.println("algorithm " + currentAlgorithmName + " on graph " + currentGraphName
+                            + " needs total " + iterationsNeededPerAlgorithm.get(a) + " iterations");
+
+                    JFreeChart barChart = ChartFactory.createBarChart(
+                            currentAlgorithmName + " algorithm on " + currentGraphName + " graph",
                             "Vertices", "Centrality score",
                             dataset, PlotOrientation.VERTICAL, true, true, false);
 
@@ -153,16 +138,13 @@ public class Main {
             throws IOException {
         FileWriter writer = new FileWriter(file);
         writer.write("algorithm,graph,iteration,vertex,score\n"); // the columns
-
         int numGraphs = graphs.size();
-        System.out.println("here");
-        if (DEGREE) {
-            iterationsNeededPerAlgorithm.add(DEFAULTITERATIONS);
 
+        if (DEGREE) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DegreeCentrality<>(graphs.get(i),
                         false, true);
-
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
@@ -178,13 +160,11 @@ public class Main {
             }
             numAlgorithms++;
         }
-
-        if (DAGPAGERANK && !USEITERATIONS) {
-            iterationsNeededPerAlgorithm.add(DEFAULTITERATIONS);
-
+        if (INDEGREE) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
-                        graphs.get(i), MAXITERATIONS);
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DegreeCentrality<>(graphs.get(i),
+                        true, true);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
@@ -192,7 +172,7 @@ public class Main {
                     builder.append(
                             centralityAlgorithm.getClass().getSimpleName() + ","
                                     + graphName + ","
-                                    + MAXITERATIONS + ","
+                                    + DEFAULTITERATIONS + ","
                                     + v + ","
                                     + centralityAlgorithm.getVertexScore(v) + "\n");
                 }
@@ -200,12 +180,169 @@ public class Main {
             }
             numAlgorithms++;
         }
-
+        if (OUTDEGREE) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DegreeCentrality<>(graphs.get(i),
+                        false, true);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (INHARMONIC) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new HarmonicCentrality<>(graphs.get(i),
+                        true, true);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (OUTHARMONIC) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new HarmonicCentrality<>(graphs.get(i),
+                        false, true);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (BETWEENNESS) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new BetweennessCentrality<>(graphs.get(i),
+                        true);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (EIGENVECTOR) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new EigenvectorCentrality<>(
+                        graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (KATZ) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new KatzCentrality<>(graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (PAGERANK) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new PageRank<>(graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+        if (DAGPAGERANK && !USEITERATIONS) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
+                        graphs.get(i), DEFAULTITERATIONS);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
         if (DAGPAGERANK && USEITERATIONS) {
-            iterationsNeededPerAlgorithm.add(MAXITERATIONS);
+            iterationsNeededPerAlgorithm.add(numAlgorithms, MAXITERATIONS);
 
             for (int i = 0; i < numGraphs; i++) {
-                for (int j = 1; j < MAXITERATIONS; j++) {
+                for (int j = 1; j <= MAXITERATIONS; j++) {
                     VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
                             graphs.get(i), j);
                     StringBuilder builder = new StringBuilder();
@@ -224,7 +361,26 @@ public class Main {
             }
             numAlgorithms++;
         }
-
+        if (DAGBETWEENNESS) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGBetweennessSourceSinkCentrality<>(
+                        graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
         writer.close();
     }
 
