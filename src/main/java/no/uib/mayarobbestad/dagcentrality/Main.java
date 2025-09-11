@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -27,6 +29,7 @@ import no.uib.mayarobbestad.dagcentrality.algorithms.DAGBetweennessSourceSinkCen
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
+import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 
 public class Main {
@@ -39,14 +42,14 @@ public class Main {
     static ArrayList<String> graphDirectory = new ArrayList<>();
 
     // The centrality algorithms to be run
-    static final boolean DEGREE = true;
-    static final boolean INDEGREE = true;
-    static final boolean OUTDEGREE = true;
-    static final boolean CLOSENESS = true;
-    static final boolean INHARMONIC = true; // variation of closeness
-    static final boolean OUTHARMONIC = true;
-    static final boolean BETWEENNESS = true;
-    static final boolean EIGENVECTOR = true;
+    static final boolean DEGREE = false;
+    static final boolean INDEGREE = false;
+    static final boolean OUTDEGREE = false;
+    static final boolean CLOSENESS = false;
+    static final boolean INHARMONIC = false; // variation of closeness
+    static final boolean OUTHARMONIC = false;
+    static final boolean BETWEENNESS = false;
+    static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DAGPAGERANK = true;
@@ -57,11 +60,13 @@ public class Main {
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = true;
+    static boolean USEITERATIONS = false;
 
     // algorithm will run MAXITERATIONS - 1 times
     static int MAXITERATIONS = 5; // the number of times the algorithm will run, applicable for PageRank
     // algorithm will run 1 iteration
+    // Slightly misleading for PageRank, since we will do the maxiterations, but we
+    // will only show the score of the final score
     static int DEFAULTITERATIONS = 1;
 
     public static void main(String[] args) throws IOException {
@@ -75,6 +80,9 @@ public class Main {
         storeCentralityScoresInCSV("results/results.csv", graphs);
         readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
 
+        findXHighestVertices("results/results.csv", "results/highestScores/highest.csv", "DAGPageRankCentrality",
+                "jdk", 1, 5);
+
         // example of topologica sorting
         /*
          * TopologicalOrderIterator<Integer, DefaultEdge> iterator = new
@@ -83,6 +91,48 @@ public class Main {
          * System.out.println(iterator.next());
          * }
          */
+    }
+
+    private static void findXHighestVertices(String file, String file2, String algorithm, String graph,
+            Integer iteration, int x)
+            throws IOException {
+        Scanner sc = new Scanner(new FileReader(new File(file)));
+        sc.useLocale(Locale.US);
+        String header = sc.nextLine(); // skip the first line
+
+        List<VertexScore> filteredResults = new ArrayList<>();
+        // we don't want to continue looking through the output if we have already found
+        // our entries
+        int check = -1;
+        while (sc.hasNext()) {
+            String[] column = sc.nextLine().strip().split(",");
+            // only add the result o the list if they
+            if (column[0].equals(algorithm) && column[1].equals(graph) && Integer.parseInt(column[2]) == iteration) {
+                check = 0;
+                filteredResults.add(new VertexScore(column[0], column[1], Integer.parseInt(column[2]),
+                        Integer.parseInt(column[3]), Double.parseDouble(column[4])));
+            }
+            // we have seen all the entries that fulfill our criteria's
+            else if (check == 0) {
+                check = 1;
+                break;
+            }
+        }
+        FileWriter writer = new FileWriter(file2);
+        writer.write(header);
+
+        // smallest scores first
+        Collections.sort(filteredResults);
+
+        for (VertexScore vertexScore : filteredResults.subList(filteredResults.size() - x, filteredResults.size())) {
+            String toWrite = vertexScore.getAlgorithm() + ","
+                    + vertexScore.getGraph() + ","
+                    + vertexScore.getIteration() + ","
+                    + vertexScore.getVertex() + ","
+                    + vertexScore.getScore();
+            System.out.println(toWrite);
+            writer.write(toWrite);
+        }
     }
 
     private static void readCSVResultsAndStoreScoresInChart(String file, String folder) throws IOException {
@@ -315,7 +365,7 @@ public class Main {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
-                        graphs.get(i), DEFAULTITERATIONS);
+                        graphs.get(i), MAXITERATIONS);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
