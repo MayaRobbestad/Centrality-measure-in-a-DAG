@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -60,17 +60,22 @@ public class Main {
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = false;
+    static boolean USEITERATIONS = true;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 5; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 1; // the number of times the algorithm will run, applicable for PageRank
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
     // will only show the score of the final score
-    static int DEFAULTITERATIONS = 1;
+    // algorithms that don't need iterating get 0
+    // Misleading for DAGPageRank, because eventhough it uses x iterations, the name
+    // of the file is
+    // 0 iterations
+    static int DEFAULTITERATIONS = 0;
 
     public static void main(String[] args) throws IOException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
 
         for (Graph<Integer, DefaultEdge> graph : graphs) {
@@ -80,17 +85,9 @@ public class Main {
         storeCentralityScoresInCSV("results/results.csv", graphs);
         readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
 
-        findXHighestVertices("results/results.csv", "results/highestScores/highest.csv", "DAGPageRankCentrality",
-                "jdk", 1, 5);
+        // findXHighestVertices("results/results.csv",
+        // "results/highestScores/highest.csv", "DAGPageRankCentrality","jdk", 1, 3);
 
-        // example of topologica sorting
-        /*
-         * TopologicalOrderIterator<Integer, DefaultEdge> iterator = new
-         * TopologicalOrderIterator<>(graphs.get(0));
-         * while (iterator.hasNext()) {
-         * System.out.println(iterator.next());
-         * }
-         */
     }
 
     private static void findXHighestVertices(String file, String file2, String algorithm, String graph,
@@ -141,7 +138,7 @@ public class Main {
         sc.nextLine(); // skip the first line
         for (int a = 0; a < numAlgorithms; a++) {
             for (int g = 0; g < graphs.size(); g++) {
-                for (int i = 0; i < iterationsNeededPerAlgorithm.get(a); i++) {
+                for (int i = 0; i <= iterationsNeededPerAlgorithm.get(a); i++) {
                     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
                     String currentAlgorithmName = "";
                     String currentGraphName = "";
@@ -192,6 +189,7 @@ public class Main {
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 for (Integer v : graphs.get(i).vertexSet()) {
+
                     builder.append(
                             centralityAlgorithm.getClass().getSimpleName() + ","
                                     + graphName + ","
@@ -355,7 +353,7 @@ public class Main {
                                     + graphName + ","
                                     + DEFAULTITERATIONS + ","
                                     + v + ","
-                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                                    + centralityAlgorithm.getVertexScore(v).toString() + "\n");
                 }
                 writer.write(builder.toString());
             }
@@ -364,18 +362,19 @@ public class Main {
         if (DAGPAGERANK && !USEITERATIONS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGPageRankCentrality<>(
                         graphs.get(i), MAXITERATIONS);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 for (Integer v : graphs.get(i).vertexSet()) {
+
                     builder.append(
                             centralityAlgorithm.getClass().getSimpleName() + ","
                                     + graphName + ","
-                                    + DEFAULTITERATIONS + ","
+                                    + MAXITERATIONS + ","
                                     + v + ","
-                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                                    + centralityAlgorithm.getVertexScore(v).toString() + "\n");
                 }
                 writer.write(builder.toString());
             }
@@ -385,19 +384,20 @@ public class Main {
             iterationsNeededPerAlgorithm.add(numAlgorithms, MAXITERATIONS);
 
             for (int i = 0; i < numGraphs; i++) {
-                for (int j = 1; j <= MAXITERATIONS; j++) {
-                    VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGPageRankCentrality<>(
+                for (int j = 0; j <= MAXITERATIONS; j++) {
+                    VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGPageRankCentrality<>(
                             graphs.get(i), j);
                     StringBuilder builder = new StringBuilder();
                     String path = graphDirectory.get(i);
                     String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                     for (Integer v : graphs.get(i).vertexSet()) {
+
                         builder.append(
                                 centralityAlgorithm.getClass().getSimpleName() + ","
                                         + graphName + ","
                                         + j + ","
                                         + v + ","
-                                        + centralityAlgorithm.getVertexScore(v) + "\n");
+                                        + centralityAlgorithm.getVertexScore(v).toString() + "\n");
                     }
                     writer.write(builder.toString());
                 }

@@ -1,12 +1,13 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
 
 import org.jgrapht.Graph;
@@ -15,14 +16,14 @@ import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-import no.uib.mayarobbestad.dagcentrality.datastructures.VertexCentralityPair;
-
-public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Double> {
+public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     private static final int MAX_ITERATIONS_DEFAULT = 100;
 
+    private int ROUNDINGNUM = 1000;
+
     private Graph<V, E> graph;
-    private Map<V, Double> scores;
+    private Map<V, BigDecimal> scores;
     private int maxIterations;
 
     public DAGPageRankCentrality(Graph<V, E> graph) {
@@ -34,13 +35,10 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
         run();
-        // TODO: find a way to do this better
-        // System.out.println("The highest x centrality scores are: " +
-        // findXHighestCentralityScores(2));
     }
 
     @Override
-    public Map<V, Double> getScores() {
+    public Map<V, BigDecimal> getScores() {
         if (scores == null) {
             run();
         }
@@ -48,7 +46,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
     }
 
     @Override
-    public Double getVertexScore(V v) {
+    public BigDecimal getVertexScore(V v) {
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
@@ -59,13 +57,15 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
      * The actual implementation of the centrality measure
      */
     private void run() {
+
+        // Initialize
         Graph<V, E> copy = new SimpleDirectedGraph<>(graph.getVertexSupplier(), graph.getEdgeSupplier(), false);
         Graphs.addGraph(copy, graph);
 
         Set<V> sources = new HashSet<>();
         Set<V> sinks = new HashSet<>();
 
-        HashMap<V, Double> totalWeight = new HashMap<>();
+        HashMap<V, BigDecimal> totalWeight = new HashMap<>();
 
         List<V> topologicalList = new ArrayList<>();
         TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
@@ -73,9 +73,7 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
             topologicalList.add(iterator.next());
         }
 
-        // System.out.println(topologicalList);
-
-        Map<V, Map<V, Double>> weightReceivedFromAncestor = new HashMap<>();
+        Map<V, Map<V, BigDecimal>> weightReceivedFromAncestor = new HashMap<>();
         for (V v : copy.vertexSet()) {
             weightReceivedFromAncestor.put(v, new HashMap<>());
             if (copy.inDegreeOf(v) == 0) {
@@ -88,103 +86,115 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Do
                 sinks.add(v);
             }
             if (copy.inDegreeOf(v) == 0) {
-                totalWeight.put(v, 1.0);
+                totalWeight.put(v, new BigDecimal("1"));
+                scores.put(v, new BigDecimal("1"));
             } else {
-                totalWeight.put(v, 0.0);
+                totalWeight.put(v, new BigDecimal("0"));
+                scores.put(v, new BigDecimal("0"));
             }
             for (V s : sources) {
                 // the source is their own ancestor
                 if (v.equals(s)) {
-                    weightReceivedFromAncestor.get(v).put(s, 1.0);
+                    weightReceivedFromAncestor.get(v).put(s, new BigDecimal("1"));
                 } else {
-                    weightReceivedFromAncestor.get(v).put(s, 0.0);
+                    weightReceivedFromAncestor.get(v).put(s, new BigDecimal("0"));
                 }
             }
         }
+
         // number of iterations in PageRank
-        for (int i = 0; i < maxIterations; i++) {
-            // forward
-            for (int j = 0; j < topologicalList.size(); j++) {
+        for (int i = 1; i <= maxIterations; i++) {
 
-                V v = topologicalList.get(j);
-                // the score this vertex will distribute to their outdegree neighbours
+            forwardFlow(copy, sources, totalWeight, topologicalList, weightReceivedFromAncestor);
 
-                for (E edge : copy.outgoingEdgesOf(v)) {
-                    V w = Graphs.getOppositeVertex(copy, edge, v);
-
-                    // iterate over all the scores of v received from each source vertex
-                    Double weight = totalWeight.get(w);
-                    for (V s : sources) {
-                        Double scoreFromGivenSource = weightReceivedFromAncestor.get(v).get(s);
-                        // no need to do all the rest if the score is 0
-                        if (scoreFromGivenSource > 0) {
-                            // v distributes the score received from a source evenly amongst their outdegree
-                            // neighbourhood
-                            Double toDistributeFromSource = scoreFromGivenSource / (double) copy.outDegreeOf(v);
-                            // updates the weight received from the source vertex s
-                            Double updateScore = weightReceivedFromAncestor.get(w).get(s) + toDistributeFromSource;
-                            weightReceivedFromAncestor.get(w).put(s, updateScore);
-                            weight += toDistributeFromSource;
-                        }
-                    }
-                    totalWeight.put(w, weight);
-                }
-            }
-            // System.out.println("iteration " + i + ":" + weightReceivedFromAncestor);
             scores.putAll(totalWeight);
             for (V v : totalWeight.keySet()) {
-                totalWeight.put(v, 0.0);
+                totalWeight.put(v, new BigDecimal("0"));
             }
 
-            if (i + 1 < maxIterations) {
-                // update the weight each source at a time
-                for (V source : sources) {
-                    Double newWeight = 0.0;
-                    for (V sink : sinks) {
-                        // adds part/whole back to the source
-                        newWeight += weightReceivedFromAncestor.get(sink).get(source) / scores.get(sink);
-                    }
-                    totalWeight.put(source, newWeight);
-                }
-                // reset scores to be ready for the next iteration
-                for (V v : copy.vertexSet()) {
-                    for (V s : sources) {
-                        // receive the score of the previous iteration
-                        if (v.equals(s)) {
-                            weightReceivedFromAncestor.get(v).put(s, totalWeight.get(s));
-                        } else {
-                            weightReceivedFromAncestor.get(v).put(s, 0.0);
-                        }
-                    }
+            if (i < maxIterations) {
+                backwardFlow(copy, sources, sinks, totalWeight, weightReceivedFromAncestor);
+            }
+        }
+    }
+
+    /**
+     * All sink vertices send the proportional score received from the source
+     * vertices back to the source vertex.
+     * 
+     * @param copy
+     * @param sources
+     * @param sinks
+     * @param totalWeight
+     * @param weightReceivedFromAncestor
+     */
+    private void backwardFlow(Graph<V, E> copy, Set<V> sources, Set<V> sinks, HashMap<V, BigDecimal> totalWeight,
+            Map<V, Map<V, BigDecimal>> weightReceivedFromAncestor) {
+
+        // update the weight each source at a time
+        for (V source : sources) {
+            BigDecimal newWeight = new BigDecimal("0");
+            for (V sink : sinks) {
+                // adds part divided by whole back to the source
+                newWeight = newWeight.add(
+                        weightReceivedFromAncestor.get(sink).get(source)
+                                .divide(scores.get(sink),
+                                        ROUNDINGNUM, RoundingMode.HALF_EVEN));
+            }
+            totalWeight.put(source, newWeight);
+        }
+
+        // reset scores to be ready for the next iteration
+        for (V v : copy.vertexSet()) {
+            for (V s : sources) {
+                // receive the score of the previous iteration
+                if (v.equals(s)) {
+                    weightReceivedFromAncestor.get(v).put(s, totalWeight.get(s));
+                } else {
+                    weightReceivedFromAncestor.get(v).put(s, new BigDecimal("0"));
                 }
             }
         }
     }
 
     /**
-     * Given a list of tupples (VertexCentralityPair), (vertex, score)
-     * What vertices have the highest scores
+     * Each vertex distributes the score given from each source vertex equally to
+     * their out neighbours.
      * 
-     * @param x
-     * @return
+     * @param copy
+     * @param sources
+     * @param totalWeight
+     * @param topologicalList
+     * @param weightReceivedFromAncestor
      */
-    private PriorityQueue<VertexCentralityPair<V>> findXHighestCentralityScores(int x) {
-        // the smallest elements is the first in the PQ
-        PriorityQueue<VertexCentralityPair<V>> xHighestScores = new PriorityQueue<>();
-        for (V v : graph.vertexSet()) {
-            VertexCentralityPair<V> current = new VertexCentralityPair<>(v, scores.get(v));
-            // System.out.println("v: " + v + " score: " + scores.get(v));
-            if (xHighestScores.size() < x) {
-                xHighestScores.add(current);
-            }
-            if (xHighestScores.size() == x) {
-                if (current.getScore() > xHighestScores.peek().getScore()) {
-                    // replace vertex with smallest score, to vertex with higher score
-                    xHighestScores.add(current);
-                    xHighestScores.poll();
+    private void forwardFlow(Graph<V, E> copy, Set<V> sources, HashMap<V, BigDecimal> totalWeight,
+            List<V> topologicalList, Map<V, Map<V, BigDecimal>> weightReceivedFromAncestor) {
+
+        for (int j = 0; j < topologicalList.size(); j++) {
+            V v = topologicalList.get(j);
+            // the score this vertex will distribute to their outdegree neighbours
+            for (E edge : copy.outgoingEdgesOf(v)) {
+                V w = Graphs.getOppositeVertex(copy, edge, v);
+                // iterate over all the scores of v received from each source vertex
+                BigDecimal weight = totalWeight.get(w);
+                for (V s : sources) {
+                    BigDecimal scoreFromGivenSource = weightReceivedFromAncestor.get(v).get(s);
+                    // no need to do all the rest if the score is 0
+                    // 1 if scoreFromGivenSource > 0, if <
+                    if (scoreFromGivenSource.compareTo(new BigDecimal("0")) > 0) {
+                        // v distributes the score received from a source evenly amongst their outdegree
+                        // neighbourhood
+                        BigDecimal toDistributeFromSource = scoreFromGivenSource
+                                .divide(new BigDecimal(copy.outDegreeOf(v)), ROUNDINGNUM, RoundingMode.HALF_EVEN);
+
+                        BigDecimal updateScore = weightReceivedFromAncestor.get(w).get(s)
+                                .add(toDistributeFromSource);
+                        weightReceivedFromAncestor.get(w).put(s, updateScore);
+                        weight = weight.add(toDistributeFromSource);
+                    }
                 }
+                totalWeight.put(w, weight);
             }
         }
-        return xHighestScores;
     }
 }

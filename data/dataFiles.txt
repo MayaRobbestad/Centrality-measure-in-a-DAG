@@ -1,6 +1,6 @@
 1
-data/software/jdk.gml
 data/synthetic/directed/format/gml/random-dag-0.gml
+data/software/jdk.gml
 data/synthetic/directed/format/gml/bottleneck.gml
 
 data/synthetic/directed/format/gml/path.gml
