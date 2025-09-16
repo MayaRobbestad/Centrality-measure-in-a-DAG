@@ -27,6 +27,7 @@ import org.jgrapht.graph.DefaultEdge;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGBetweennessSourceSinkCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
+import no.uib.mayarobbestad.dagcentrality.algorithms.DAGReachCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
@@ -52,7 +53,8 @@ public class Main {
     static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
-    static final boolean DAGPAGERANK = true;
+    static final boolean DAGPAGERANK = false;
+    static final boolean DAGREACH = true;
     static final boolean DAGBETWEENNESS = false;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
@@ -401,6 +403,26 @@ public class Main {
                     }
                     writer.write(builder.toString());
                 }
+            }
+            numAlgorithms++;
+        }
+        if (DAGREACH) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGReachCentrality<>(
+                        graphs.get(i), true);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
             }
             numAlgorithms++;
         }
