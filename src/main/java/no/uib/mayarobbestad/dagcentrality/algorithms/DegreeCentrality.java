@@ -148,7 +148,16 @@ public class DegreeCentrality<V, E> implements VertexScoringAlgorithm<V, Double>
 
     @Override
     public String toString() {
-        return "Degree Centrality";
+        switch (state) {
+            case CentralityState.ALL:
+                return "Degree Centrality";
+            case CentralityState.INDEGREE:
+                return "In-Degree Centrality";
+            case CentralityState.OUTDEGREE:
+                return "Out-Degree Centrality";
+            default:
+                return "Default Degree Centrality";
+        }
     }
 
     private enum CentralityState {

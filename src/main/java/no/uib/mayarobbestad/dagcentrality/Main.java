@@ -43,9 +43,9 @@ public class Main {
     static ArrayList<String> graphDirectory = new ArrayList<>();
 
     // The centrality algorithms to be run
-    static final boolean DEGREE = false;
-    static final boolean INDEGREE = false;
-    static final boolean OUTDEGREE = false;
+    static final boolean DEGREE = true;
+    static final boolean INDEGREE = true;
+    static final boolean OUTDEGREE = true;
     static final boolean CLOSENESS = false;
     static final boolean INHARMONIC = false; // variation of closeness
     static final boolean OUTHARMONIC = false;
@@ -54,15 +54,16 @@ public class Main {
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DAGPAGERANK = false;
-    static final boolean DAGREACH = true;
-    static final boolean DAGBETWEENNESS = false;
+    static final boolean DAGCANREACH = false;
+    static final boolean DAGREACHBY = false;
+    static final boolean DAGBETWEENNESS = true;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = true;
+    static boolean USEITERATIONS = false;
 
     // algorithm will run MAXITERATIONS - 1 times
     static int MAXITERATIONS = 1; // the number of times the algorithm will run, applicable for PageRank
@@ -193,7 +194,7 @@ public class Main {
                 for (Integer v : graphs.get(i).vertexSet()) {
 
                     builder.append(
-                            centralityAlgorithm.getClass().getSimpleName() + ","
+                            centralityAlgorithm.toString() + ","
                                     + graphName + ","
                                     + DEFAULTITERATIONS + ","
                                     + v + ","
@@ -213,7 +214,7 @@ public class Main {
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(
-                            centralityAlgorithm.getClass().getSimpleName() + ","
+                            centralityAlgorithm.toString() + ","
                                     + graphName + ","
                                     + DEFAULTITERATIONS + ","
                                     + v + ","
@@ -233,7 +234,7 @@ public class Main {
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(
-                            centralityAlgorithm.getClass().getSimpleName() + ","
+                            centralityAlgorithm.toString() + ","
                                     + graphName + ","
                                     + DEFAULTITERATIONS + ","
                                     + v + ","
@@ -406,17 +407,18 @@ public class Main {
             }
             numAlgorithms++;
         }
-        if (DAGREACH) {
+
+        if (DAGCANREACH) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
                 VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGReachCentrality<>(
-                        graphs.get(i), true);
+                        graphs.get(i), false, true);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 for (Integer v : graphs.get(i).vertexSet()) {
                     builder.append(
-                            centralityAlgorithm.getClass().getSimpleName() + ","
+                            centralityAlgorithm.toString() + ","
                                     + graphName + ","
                                     + DEFAULTITERATIONS + ","
                                     + v + ","
@@ -426,6 +428,28 @@ public class Main {
             }
             numAlgorithms++;
         }
+
+        if (DAGREACHBY) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGReachCentrality<>(
+                        graphs.get(i), false, false);
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.toString() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+
         if (DAGBETWEENNESS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {

@@ -1,9 +1,33 @@
 algorithm,graph,iteration,vertex,score
-DAGReachCentrality,random-dag-0,0,0,0.625
-DAGReachCentrality,random-dag-0,0,1,0.375
-DAGReachCentrality,random-dag-0,0,2,0.25
-DAGReachCentrality,random-dag-0,0,3,0.125
-DAGReachCentrality,random-dag-0,0,4,0.125
-DAGReachCentrality,random-dag-0,0,5,0
-DAGReachCentrality,random-dag-0,0,6,0
-DAGReachCentrality,random-dag-0,0,7,0
+Out-Degree Centrality,random-dag-0,0,0,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,1,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,2,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,3,0.14285714285714285
+Out-Degree Centrality,random-dag-0,0,4,0.14285714285714285
+Out-Degree Centrality,random-dag-0,0,5,0.0
+Out-Degree Centrality,random-dag-0,0,6,0.0
+Out-Degree Centrality,random-dag-0,0,7,0.0
+In-Degree Centrality,random-dag-0,0,0,0.0
+In-Degree Centrality,random-dag-0,0,1,0.0
+In-Degree Centrality,random-dag-0,0,2,0.14285714285714285
+In-Degree Centrality,random-dag-0,0,3,0.2857142857142857
+In-Degree Centrality,random-dag-0,0,4,0.14285714285714285
+In-Degree Centrality,random-dag-0,0,5,0.14285714285714285
+In-Degree Centrality,random-dag-0,0,6,0.14285714285714285
+In-Degree Centrality,random-dag-0,0,7,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,0,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,1,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,2,0.2857142857142857
+Out-Degree Centrality,random-dag-0,0,3,0.14285714285714285
+Out-Degree Centrality,random-dag-0,0,4,0.14285714285714285
+Out-Degree Centrality,random-dag-0,0,5,0.0
+Out-Degree Centrality,random-dag-0,0,6,0.0
+Out-Degree Centrality,random-dag-0,0,7,0.0
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,0,0.0
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,1,0.0
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,2,2.0
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,3,1.5
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,4,0.5
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,5,0.0
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,6,0.0
+DAGBetweennessSourceSinkCentrality,random-dag-0,0,7,0.0
