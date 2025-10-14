@@ -1,5 +1,7 @@
-1
-data/synthetic/directed/format/gml/random-dag-0.gml
+2
+data/synthetic/directed/format/gml/example 0.gml
+data/synthetic/directed/format/gml/example 0 with extra edge.gml
+
 data/software/jdk.gml
 data/synthetic/directed/format/gml/bottleneck.gml
 

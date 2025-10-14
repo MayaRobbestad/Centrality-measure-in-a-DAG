@@ -43,9 +43,9 @@ public class Main {
     static ArrayList<String> graphDirectory = new ArrayList<>();
 
     // The centrality algorithms to be run
-    static final boolean DEGREE = true;
-    static final boolean INDEGREE = true;
-    static final boolean OUTDEGREE = true;
+    static final boolean DEGREE = false;
+    static final boolean INDEGREE = false;
+    static final boolean OUTDEGREE = false;
     static final boolean CLOSENESS = false;
     static final boolean INHARMONIC = false; // variation of closeness
     static final boolean OUTHARMONIC = false;
@@ -63,10 +63,10 @@ public class Main {
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = false;
+    static boolean USEITERATIONS = true;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 1; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 16; // the number of times the algorithm will run, applicable for PageRank
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
     // will only show the score of the final score
@@ -157,12 +157,12 @@ public class Main {
                             currentAlgorithmName = algorithmName;
                             currentGraphName = graphName;
                         }
-                        dataset.addValue(score, graphName + " on iteration " + i, v);
+                        dataset.addValue(score, graphName + " in iteration " + i, v);
                     }
-
+                    // title =currentAlgorithmName + " algorithm on " + currentGraphName + " graph"
                     JFreeChart barChart = ChartFactory.createBarChart(
                             currentAlgorithmName + " algorithm on " + currentGraphName + " graph",
-                            "Vertices", "Centrality score",
+                            "Vertices", "Centrality Score",
                             dataset, PlotOrientation.VERTICAL, true, true, false);
 
                     ChartUtils.saveChartAsPNG(
