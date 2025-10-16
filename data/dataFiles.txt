@@ -1,8 +1,17 @@
 2
-data/synthetic/directed/format/gml/example 0.gml
 data/synthetic/directed/format/gml/example 0 with extra edge.gml
-
+data/synthetic/directed/format/gml/example 0.gml
 data/software/jdk.gml
+data/software/javax.gml
+data/software/java.gml
+data/citation/cora.gml
+data/software/junit.gml
+
+data/blockchain/Bitcoin transactions (2009-2013).gml
+
+
+
+
 data/synthetic/directed/format/gml/bottleneck.gml
 
 data/synthetic/directed/format/gml/path.gml

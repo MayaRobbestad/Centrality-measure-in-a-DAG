@@ -15,7 +15,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
+import no.uib.mayarobbestad.dagcentrality.algorithms.Distribution;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 
 public class DAGPageRankTest {
@@ -35,7 +35,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresAfterIteration0onRandomGraph0() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new DAGPageRankCentrality<>(graph0, 0);
+        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new Distribution<>(graph0, 0);
         Map<Integer, BigDecimal> expectedScores = new HashMap<>();
 
         expectedScores.put(0, new BigDecimal("1"));
@@ -56,7 +56,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresAfterIteration1onRandomGraph0() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new DAGPageRankCentrality<>(graph0, 1);
+        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new Distribution<>(graph0, 1);
         Map<Integer, BigDecimal> expectedScores = new HashMap<>();
 
         expectedScores.put(0, new BigDecimal("1.000"));
@@ -77,7 +77,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresAfterIteration2onRandomGraph0() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new DAGPageRankCentrality<>(graph0, 2);
+        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new Distribution<>(graph0, 2);
 
         Map<Integer, BigDecimal> expectedScores = new HashMap<>();
 
@@ -99,7 +99,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresAfterIteration3onRandomGraph0() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new DAGPageRankCentrality<>(graph0, 3);
+        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new Distribution<>(graph0, 3);
 
         Map<Integer, BigDecimal> expectedScores = new HashMap<>();
 
@@ -121,7 +121,7 @@ public class DAGPageRankTest {
 
     @Test
     public void testScoresAfterIteration4onRandomGraph0() throws FileNotFoundException {
-        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new DAGPageRankCentrality<>(graph0, 4);
+        VertexScoringAlgorithm<Integer, BigDecimal> algorithm = new Distribution<>(graph0, 4);
 
         Map<Integer, BigDecimal> expectedScores = new HashMap<>();
 

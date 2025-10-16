@@ -25,9 +25,9 @@ import org.jgrapht.alg.scoring.KatzCentrality;
 import org.jgrapht.alg.scoring.PageRank;
 import org.jgrapht.graph.DefaultEdge;
 
-import no.uib.mayarobbestad.dagcentrality.algorithms.DAGBetweennessSourceSinkCentrality;
-import no.uib.mayarobbestad.dagcentrality.algorithms.DAGPageRankCentrality;
-import no.uib.mayarobbestad.dagcentrality.algorithms.DAGReachCentrality;
+import no.uib.mayarobbestad.dagcentrality.algorithms.APSPSourceSinkBetweenness;
+import no.uib.mayarobbestad.dagcentrality.algorithms.Distribution;
+import no.uib.mayarobbestad.dagcentrality.algorithms.Reach;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
@@ -53,10 +53,10 @@ public class Main {
     static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
-    static final boolean DAGPAGERANK = false;
-    static final boolean DAGCANREACH = false;
-    static final boolean DAGREACHBY = false;
-    static final boolean DAGBETWEENNESS = true;
+    static final boolean DISTRIBUTION = false;
+    static final boolean REACH = false;
+    static final boolean DEPENDENCY = false;
+    static final boolean APSP_SS_BETWEENNESS = true;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
@@ -66,7 +66,8 @@ public class Main {
     static boolean USEITERATIONS = true;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 16; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 5; // the number of times the algorithm will run, applicable for PageRank
+
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
     // will only show the score of the final score
@@ -86,10 +87,95 @@ public class Main {
         }
 
         storeCentralityScoresInCSV("results/results.csv", graphs);
-        readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
+
+        // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
+        // storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
+
+        // String algo = "";
+        // readCSVRuntimeResultsAndStoreInChart("results/runtime/results/" + algo,
+        // "results/runtime/charts");
 
         // findXHighestVertices("results/results.csv",
         // "results/highestScores/highest.csv", "DAGPageRankCentrality","jdk", 1, 3);
+
+    }
+
+    private static void readCSVRuntimeResultsAndStoreInChart(String string, String string2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'readCSVRuntimeResultsAndStoreInChart'");
+    }
+
+    public static long timeAlgorithm(VertexScoringAlgorithm<Integer, BigDecimal> algorithm) {
+        long startTime = System.nanoTime();
+        // this method calls on compute, might be some
+        // extra time with checking wether or not the scores are null
+        algorithm.getScores();
+        long endTime = System.nanoTime();
+        long timeElapsed = (endTime - startTime);
+        return timeElapsed;
+    }
+
+    private static void storeRuntimeOfAlgorithmsInCSV(String file) throws IOException {
+        FileWriter writer = new FileWriter(file);
+        writer.write("algorithm,graph,iteration,vertices,time\n"); // the columns
+        int numGraphs = graphs.size();
+
+        if (REACH) {
+
+            for (int i = 0; i < numGraphs; i++) {
+
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                VertexScoringAlgorithm centralityAlgorithm = new Reach<>(graphs.get(i), false, true);
+                int n = graphs.get(i).vertexSet().size();
+
+                // this is where the algorithm is run with .getScores
+                long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
+                double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
+                StringBuilder builder = new StringBuilder();
+
+                builder.append(
+                        centralityAlgorithm.getClass().getSimpleName() + ","
+                                + graphName + ","
+                                + DEFAULTITERATIONS + ","
+                                + n + ","
+                                + timeElapsedSeconds + "\n");
+
+                writer.write(builder.toString());
+            }
+        }
+        if (DISTRIBUTION) {
+            // writer.write("algorithm,graph,iteration,n,time\n"); // the columns
+            for (int i = 0; i < numGraphs; i++) {
+
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                VertexScoringAlgorithm centralityAlgorithm = new Distribution<>(graphs.get(i), MAXITERATIONS);
+                int n = graphs.get(i).vertexSet().size();
+
+                // this is where the algorithm is run with .getScores
+                long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
+                double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
+                StringBuilder builder = new StringBuilder();
+
+                builder.append(
+                        centralityAlgorithm.getClass().getSimpleName() + ","
+                                + graphName + ","
+                                + MAXITERATIONS + ","
+                                + n + ","
+                                + timeElapsedSeconds + "\n");
+
+                writer.write(builder.toString());
+            }
+        }
+        if (APSP_SS_BETWEENNESS) {
+            String centralityName = "Betweenness Centrality";
+            for (int i = 0; i < numGraphs; i++) {
+
+            }
+        }
+        writer.close();
+        // TODO: implement for other centrality measures
 
     }
 
@@ -192,7 +278,6 @@ public class Main {
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 for (Integer v : graphs.get(i).vertexSet()) {
-
                     builder.append(
                             centralityAlgorithm.toString() + ","
                                     + graphName + ","
@@ -249,6 +334,7 @@ public class Main {
             for (int i = 0; i < numGraphs; i++) {
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new HarmonicCentrality<>(graphs.get(i),
                         true, true);
+
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
@@ -362,10 +448,10 @@ public class Main {
             }
             numAlgorithms++;
         }
-        if (DAGPAGERANK && !USEITERATIONS) {
+        if (DISTRIBUTION && !USEITERATIONS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGPageRankCentrality<>(
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Distribution<>(
                         graphs.get(i), MAXITERATIONS);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
@@ -383,12 +469,12 @@ public class Main {
             }
             numAlgorithms++;
         }
-        if (DAGPAGERANK && USEITERATIONS) {
+        if (DISTRIBUTION && USEITERATIONS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, MAXITERATIONS);
 
             for (int i = 0; i < numGraphs; i++) {
                 for (int j = 0; j <= MAXITERATIONS; j++) {
-                    VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGPageRankCentrality<>(
+                    VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Distribution<>(
                             graphs.get(i), j);
                     StringBuilder builder = new StringBuilder();
                     String path = graphDirectory.get(i);
@@ -408,10 +494,10 @@ public class Main {
             numAlgorithms++;
         }
 
-        if (DAGCANREACH) {
+        if (REACH) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGReachCentrality<>(
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Reach<>(
                         graphs.get(i), false, true);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
@@ -429,10 +515,10 @@ public class Main {
             numAlgorithms++;
         }
 
-        if (DAGREACHBY) {
+        if (DEPENDENCY) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new DAGReachCentrality<>(
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Reach<>(
                         graphs.get(i), false, false);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
@@ -450,10 +536,10 @@ public class Main {
             numAlgorithms++;
         }
 
-        if (DAGBETWEENNESS) {
+        if (APSP_SS_BETWEENNESS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new DAGBetweennessSourceSinkCentrality<>(
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new APSPSourceSinkBetweenness<>(
                         graphs.get(i));
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);

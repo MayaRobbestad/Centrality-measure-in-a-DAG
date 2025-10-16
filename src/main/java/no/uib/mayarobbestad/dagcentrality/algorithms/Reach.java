@@ -12,22 +12,21 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
-import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-public class DAGReachCentrality<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
+public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     private Graph<V, E> graph;
     private Map<V, BigDecimal> scores;
     private boolean normalize;
     private CentralityState state;
 
-    public DAGReachCentrality(Graph<V, E> graph, boolean normalize) {
+    public Reach(Graph<V, E> graph, boolean normalize) {
         this.graph = graph;
         this.scores = new HashMap<>();
         this.normalize = normalize;
         this.state = CentralityState.REACH;
-        run();
+        // run();
     }
 
     /**
@@ -40,7 +39,7 @@ public class DAGReachCentrality<V, E> implements VertexScoringAlgorithm<V, BigDe
      * @param normalize
      * @param canReach
      */
-    public DAGReachCentrality(Graph<V, E> graph, boolean normalize, boolean canReach) {
+    public Reach(Graph<V, E> graph, boolean normalize, boolean canReach) {
         this.graph = graph;
         this.scores = new HashMap<>();
         this.normalize = normalize;
@@ -49,7 +48,7 @@ public class DAGReachCentrality<V, E> implements VertexScoringAlgorithm<V, BigDe
         } else {
             this.state = CentralityState.DEPENDENCY;
         }
-        run();
+        // run();
     }
 
     @Override
@@ -69,36 +68,37 @@ public class DAGReachCentrality<V, E> implements VertexScoringAlgorithm<V, BigDe
     }
 
     private void run() {
-        Graph<V, E> copy = new SimpleDirectedGraph<>(graph.getVertexSupplier(), graph.getEdgeSupplier(), false);
-        Graphs.addGraph(copy, graph);
+        // Graph<V, E> graph = new SimpleDirectedGraph<>(graph.getVertexSupplier(),
+        // graph.getEdgeSupplier(), false);
+        // Graphs.addGraph(graph, graph);
 
         Map<V, Set<V>> reached = new HashMap<>();
 
-        for (V v : copy.vertexSet()) {
+        for (V v : graph.vertexSet()) {
             reached.put(v, new HashSet<>());
         }
 
         List<V> topologicalList = new ArrayList<>();
-        TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(copy);
+        TopologicalOrderIterator<V, E> iterator = new TopologicalOrderIterator<>(graph);
         while (iterator.hasNext()) {
             topologicalList.add(iterator.next());
         }
 
         if (state == CentralityState.REACH) {
-            reach(copy, reached, topologicalList);
+            reach(graph, reached, topologicalList);
         } else {
-            dependency(copy, reached, topologicalList);
+            dependency(graph, reached, topologicalList);
         }
 
         System.out.println(reached);
 
-        for (V v : copy.vertexSet()) {
+        for (V v : graph.vertexSet()) {
             if (!normalize) {
                 BigDecimal score = new BigDecimal(reached.get(v).size());
                 scores.put(v, score);
             }
             if (normalize) {
-                BigDecimal n = new BigDecimal(copy.vertexSet().size());
+                BigDecimal n = new BigDecimal(graph.vertexSet().size());
                 BigDecimal score = new BigDecimal(reached.get(v).size());
                 scores.put(v, score.divide(n));
             }

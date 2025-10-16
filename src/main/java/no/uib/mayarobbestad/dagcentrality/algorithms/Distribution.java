@@ -16,7 +16,7 @@ import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
+public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     private static final int MAX_ITERATIONS_DEFAULT = 100;
 
@@ -26,11 +26,11 @@ public class DAGPageRankCentrality<V, E> implements VertexScoringAlgorithm<V, Bi
     private Map<V, BigDecimal> scores;
     private int maxIterations;
 
-    public DAGPageRankCentrality(Graph<V, E> graph) {
+    public Distribution(Graph<V, E> graph) {
         this(graph, MAX_ITERATIONS_DEFAULT);
     }
 
-    public DAGPageRankCentrality(Graph<V, E> graph, int maxIterations) {
+    public Distribution(Graph<V, E> graph, int maxIterations) {
         this.graph = graph;
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
