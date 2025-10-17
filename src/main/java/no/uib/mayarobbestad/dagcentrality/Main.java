@@ -29,6 +29,7 @@ import org.jgrapht.graph.DefaultEdge;
 import no.uib.mayarobbestad.dagcentrality.algorithms.APSPSourceSinkBetweenness;
 import no.uib.mayarobbestad.dagcentrality.algorithms.Distribution;
 import no.uib.mayarobbestad.dagcentrality.algorithms.Reach;
+import no.uib.mayarobbestad.dagcentrality.algorithms.SSSPPBetweenness;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
@@ -57,7 +58,8 @@ public class Main {
     static final boolean DISTRIBUTION = false;
     static final boolean REACH = false;
     static final boolean DEPENDENCY = false;
-    static final boolean APSP_SS_BETWEENNESS = true;
+    static final boolean APSP_SS_BETWEENNESS = false;
+    static final boolean SSSPP_BETWEENNESS = true;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
@@ -542,6 +544,27 @@ public class Main {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
                 VertexScoringAlgorithm<Integer, Long> centralityAlgorithm = new APSPSourceSinkBetweenness<>(
+                        graphs.get(i));
+                StringBuilder builder = new StringBuilder();
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                for (Integer v : graphs.get(i).vertexSet()) {
+                    builder.append(
+                            centralityAlgorithm.getClass().getSimpleName() + ","
+                                    + graphName + ","
+                                    + DEFAULTITERATIONS + ","
+                                    + v + ","
+                                    + centralityAlgorithm.getVertexScore(v) + "\n");
+                }
+                writer.write(builder.toString());
+            }
+            numAlgorithms++;
+        }
+
+        if (SSSPP_BETWEENNESS) {
+            iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
+            for (int i = 0; i < numGraphs; i++) {
+                VertexScoringAlgorithm<Integer, Long> centralityAlgorithm = new SSSPPBetweenness<>(
                         graphs.get(i));
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);

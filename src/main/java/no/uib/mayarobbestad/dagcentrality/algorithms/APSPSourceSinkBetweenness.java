@@ -91,6 +91,7 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
             V v = topologicalList.get(i);
             bfs(v);
         }
+        System.out.println(topologicalList);
         System.out.println(dist);
 
         APSPNotNormalized(sources, internal, sinks);
