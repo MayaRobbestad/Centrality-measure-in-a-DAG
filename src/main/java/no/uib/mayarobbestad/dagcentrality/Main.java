@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,7 +86,6 @@ public class Main {
         for (Graph<Integer, DefaultEdge> graph : graphs) {
             GreedyFAS.removeCycleFromDirectedGraph(graph);
         }
-
         storeCentralityScoresInCSV("results/results.csv", graphs);
 
         // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
@@ -497,8 +497,9 @@ public class Main {
         if (REACH) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Reach<>(
+                VertexScoringAlgorithm<Integer, Integer> centralityAlgorithm = new Reach<>(
                         graphs.get(i), false, true);
+                centralityAlgorithm.getScores(); // run the algorithm
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
@@ -518,8 +519,9 @@ public class Main {
         if (DEPENDENCY) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Reach<>(
+                VertexScoringAlgorithm<Integer, Integer> centralityAlgorithm = new Reach<>(
                         graphs.get(i), false, false);
+                centralityAlgorithm.getScores(); // run the algorithm
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
@@ -539,7 +541,7 @@ public class Main {
         if (APSP_SS_BETWEENNESS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new APSPSourceSinkBetweenness<>(
+                VertexScoringAlgorithm<Integer, Long> centralityAlgorithm = new APSPSourceSinkBetweenness<>(
                         graphs.get(i));
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);

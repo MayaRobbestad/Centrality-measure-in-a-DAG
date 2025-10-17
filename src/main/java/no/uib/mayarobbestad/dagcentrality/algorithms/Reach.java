@@ -1,6 +1,5 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,10 +13,10 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
+public class Reach<V, E> implements VertexScoringAlgorithm<V, Integer> {
 
     private Graph<V, E> graph;
-    private Map<V, BigDecimal> scores;
+    private Map<V, Integer> scores;
     private boolean normalize;
     private CentralityState state;
 
@@ -52,15 +51,16 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
     }
 
     @Override
-    public Map<V, BigDecimal> getScores() {
-        if (scores == null) {
+    public Map<V, Integer> getScores() {
+
+        if (scores.isEmpty()) {
             run();
         }
         return Collections.unmodifiableMap(scores);
     }
 
     @Override
-    public BigDecimal getVertexScore(V v) {
+    public Integer getVertexScore(V v) {
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
@@ -68,9 +68,6 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
     }
 
     private void run() {
-        // Graph<V, E> graph = new SimpleDirectedGraph<>(graph.getVertexSupplier(),
-        // graph.getEdgeSupplier(), false);
-        // Graphs.addGraph(graph, graph);
 
         Map<V, Set<V>> reached = new HashMap<>();
 
@@ -90,19 +87,18 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
             dependency(graph, reached, topologicalList);
         }
 
-        System.out.println(reached);
-
         for (V v : graph.vertexSet()) {
             if (!normalize) {
-                BigDecimal score = new BigDecimal(reached.get(v).size());
+                Integer score = reached.get(v).size();
                 scores.put(v, score);
             }
             if (normalize) {
-                BigDecimal n = new BigDecimal(graph.vertexSet().size());
-                BigDecimal score = new BigDecimal(reached.get(v).size());
-                scores.put(v, score.divide(n));
+                Integer n = graph.vertexSet().size() - 1;
+                Integer score = reached.get(v).size();
+                scores.put(v, score / n);
             }
         }
+
     }
 
     /**

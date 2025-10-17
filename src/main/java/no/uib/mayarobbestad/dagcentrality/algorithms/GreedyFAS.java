@@ -156,6 +156,7 @@ public class GreedyFAS {
             }
         }
         g.removeAllEdges(toRemove);
+        System.out.println("removed:" + toRemove);
         return toRemove;
     }
 

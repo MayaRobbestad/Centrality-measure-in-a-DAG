@@ -1,7 +1,7 @@
 graph [
     directed 1
     n 8
-    m 7
+    m 9
     description "Example Pål has given at our meeting at 12/8/2025"
     node [
         id 0

@@ -1,5 +1,6 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,28 +16,20 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-/**
- * This centrality calculates the score of a vertex based on the number of paths
- * a vertex is on.
- * Inspired by betweenness centrality, but instead of finding the shortest paths
- * from every vertex to
- * all other vertices, we calculate the score based on the number of shortest
- * paths from all sources to sinks
- */
-public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
+public class APSPSourceSinkBetweennessNormalized<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     private Graph<V, E> graph;
-    private Map<V, Long> scores;
+    private Map<V, BigDecimal> scores;
     private Map<V, Map<V, Integer>> dist;
 
-    public APSPSourceSinkBetweenness(Graph<V, E> graph) {
+    public APSPSourceSinkBetweennessNormalized(Graph<V, E> graph) {
         this.graph = graph;
         this.scores = new HashMap<>();
         run();
     }
 
     @Override
-    public Map<V, Long> getScores() {
+    public Map<V, BigDecimal> getScores() {
         if (scores == null) {
             run();
         }
@@ -44,7 +37,7 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
     }
 
     @Override
-    public Long getVertexScore(V v) {
+    public BigDecimal getVertexScore(V v) {
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
@@ -79,7 +72,7 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
             } else {
                 internal.add(current); // internal
             }
-            scores.put(current, (long) 0);
+            scores.put(current, new BigDecimal("0"));
         }
         System.out.println("Sources:" + sources);
         System.out.println("sinks" + sinks);
@@ -93,10 +86,11 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
         }
         System.out.println(dist);
 
-        APSPNotNormalized(sources, internal, sinks);
+        APSPNormalized(sources, internal, sinks);
+
     }
 
-    private void APSPNotNormalized(Set<V> sources, Set<V> internal, Set<V> sinks) {
+    private void APSPNormalized(Set<V> sources, Set<V> internal, Set<V> sinks) {
         for (V s : sources) {
             for (V t : sinks) {
                 if (!dist.get(s).containsKey(t)) // t not reachable from s
@@ -105,8 +99,7 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
                     if (!dist.get(s).containsKey(v) || !dist.get(v).containsKey(t))
                         continue;
                     if (dist.get(s).get(v) + dist.get(v).get(t) == dist.get(s).get(t))
-
-                        scores.put(v, scores.get(v) + 1);
+                        scores.put(v, scores.get(v).add(new BigDecimal(1)));
                 }
             }
         }
