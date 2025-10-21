@@ -29,7 +29,7 @@ import org.jgrapht.graph.DefaultEdge;
 import no.uib.mayarobbestad.dagcentrality.algorithms.APSPSourceSinkBetweenness;
 import no.uib.mayarobbestad.dagcentrality.algorithms.Distribution;
 import no.uib.mayarobbestad.dagcentrality.algorithms.Reach;
-import no.uib.mayarobbestad.dagcentrality.algorithms.SSSPPBetweenness;
+import no.uib.mayarobbestad.dagcentrality.algorithms.SAASBetweenness;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
@@ -59,7 +59,7 @@ public class Main {
     static final boolean REACH = false;
     static final boolean DEPENDENCY = false;
     static final boolean APSP_SS_BETWEENNESS = false;
-    static final boolean SSSPP_BETWEENNESS = true;
+    static final boolean SAAS_BETWEENNESS = true;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
@@ -376,7 +376,7 @@ public class Main {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
                 VertexScoringAlgorithm<Integer, Double> centralityAlgorithm = new BetweennessCentrality<>(graphs.get(i),
-                        true);
+                        false);
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
@@ -561,10 +561,10 @@ public class Main {
             numAlgorithms++;
         }
 
-        if (SSSPP_BETWEENNESS) {
+        if (SAAS_BETWEENNESS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Long> centralityAlgorithm = new SSSPPBetweenness<>(
+                VertexScoringAlgorithm<Integer, Long> centralityAlgorithm = new SAASBetweenness<>(
                         graphs.get(i));
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);

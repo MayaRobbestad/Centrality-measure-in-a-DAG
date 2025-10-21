@@ -21,7 +21,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
  * all other vertices, we calculate the score based on the number of shortest
  * paths from all sources to sinks
  */
-public class SSSPPBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
+public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
 
     private Graph<V, E> graph;
     private Map<V, Long> scores;
@@ -29,14 +29,16 @@ public class SSSPPBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
     private Set<V> sources;
     private Set<V> internal;
     private Set<V> sinks;
+    private Map<V, Map<V, Integer>> sigma;
 
-    public SSSPPBetweenness(Graph<V, E> graph) {
+    public SAASBetweenness(Graph<V, E> graph) {
         this.graph = graph;
         this.scores = new HashMap<>();
         this.dist = new HashMap<>();
         this.sources = new HashSet<>();
         this.internal = new HashSet<>();
         this.sinks = new HashSet<>();
+        this.sigma = new HashMap<>();
         run();
     }
 
@@ -84,9 +86,88 @@ public class SSSPPBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
 
         initializeDP();
 
-        spFromSources(topologicalList);
-        spFromSinks(topologicalList);
+        // spFromSources(topologicalList);
+        // spFromSinks(topologicalList);
+        spFromSinksWithOptimization(topologicalList);
+        spFromSourcesAndSinksAndFindSigma(topologicalList);
+
         System.out.println("distance:" + dist);
+    }
+
+    private void spFromSourcesAndSinksAndFindSigma(List<V> topologicalList) {
+
+        for (V s : this.sources) {
+            Map<V, Integer> distanceFromStoAll = new HashMap<>();
+            for (V v : graph.vertexSet()) {
+                if (v.equals(s)) {
+                    distanceFromStoAll.put(v, 1);
+                } else {
+                    distanceFromStoAll.put(v, 0);
+
+                }
+            }
+            sigma.put(s, distanceFromStoAll);
+        }
+        System.out.println("graph:" + graph);
+        System.out.println("source" + sources);
+        System.out.println(topologicalList);
+        for (int i = 0; i < topologicalList.size(); i++) {
+            V v = topologicalList.get(i);
+            for (V s : sources) {
+                for (E e : graph.outgoingEdgesOf(v)) {
+                    V u = Graphs.getOppositeVertex(graph, e, v);
+                    // another shortest path has been found from s to u via v
+                    if (dist.get(s).get(v) + 1 == dist.get(s).get(u)) {
+                        // the number of shortest paths from s to u via v, is the number of shortest
+                        // paths
+                        // already going there plus the number of shortest paths going to v
+                        int numSPPaths = sigma.get(s).get(u) + sigma.get(s).get(v);
+                        sigma.get(s).put(u, numSPPaths);
+                    }
+                    // this shortest path is significantly shorter than the one found previously
+                    if (dist.get(s).get(v) + 1 < dist.get(s).get(u)) {
+                        // dist(s,u) = dist(s,v) + 1
+                        dist.get(s).put(u, dist.get(s).get(v) + 1);
+                        // a new significantly shorter shortest path has been found, therefore we reset
+                        // the number of sp found to the number os hortest paths passing v
+                        sigma.get(s).put(u, sigma.get(s).get(v));
+                        sigma.get(s).put(u, 1);
+
+                    }
+                    // if (dist.get(s).get(v))
+                    /*
+                     * // This means that the shortest path from s to u contains v
+                     * if (this.sinks.contains(u) && dist.get(s).get(v) + 1 == dist.get(s).get(u)) {
+                     * // number of paths from s to u (t)
+                     * // found another path
+                     * Integer numPaths = sigma.get(s).get(u) + 1;
+                     * // increment the score
+                     * sigma.get(s).put(u, numPaths);
+                     * }
+                     */
+
+                }
+            }
+
+        }
+        System.out.println("sigma:" + this.sigma);
+
+        for (int i = topologicalList.size() - 1; i > 0; i--) {
+            V v = topologicalList.get(i);
+            if (this.sources.contains(v)) {
+                // skip computing shortest path from source to sink again
+                continue;
+            }
+            for (V t : sinks) {
+                for (E e : graph.incomingEdgesOf(v)) {
+                    V u = Graphs.getOppositeVertex(graph, e, v);
+                    if (dist.get(v).get(t) < dist.get(u).get(t)) {
+                        // dist(s,u) = dist(s,v) + 1
+                        dist.get(u).put(t, dist.get(v).get(t) + 1);
+                    }
+                }
+            }
+        }
     }
 
     private void APSPNotNormalized(Set<V> sources, Set<V> internal, Set<V> sinks) {
@@ -106,6 +187,23 @@ public class SSSPPBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
     }
 
     private void spFromSinks(List<V> topologicalList) {
+        // could perhaps stop when we have reached a source vertex, since we already
+        // have computed that
+        for (int i = topologicalList.size() - 1; i > 0; i--) {
+            V v = topologicalList.get(i);
+            for (V t : sinks) {
+                for (E e : graph.incomingEdgesOf(v)) {
+                    V u = Graphs.getOppositeVertex(graph, e, v);
+                    if (dist.get(v).get(t) < dist.get(u).get(t)) {
+                        // dist(s,u) = dist(s,v) + 1
+                        dist.get(u).put(t, dist.get(v).get(t) + 1);
+                    }
+                }
+            }
+        }
+    }
+
+    private void spFromSinksWithOptimization(List<V> topologicalList) {
         // could perhaps stop when we have reached a source vertex, since we already
         // have computed that
         for (int i = topologicalList.size() - 1; i > 0; i--) {
@@ -142,6 +240,7 @@ public class SSSPPBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
     }
 
     private void initializeDP() {
+
         for (V s : this.sources) {
             Map<V, Long> sourceToAll = new HashMap<>();
             for (V v : graph.vertexSet()) {
@@ -173,6 +272,7 @@ public class SSSPPBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
             }
             dist.put(v, sinkToSink);
         }
+        System.out.println("dp initialized:" + dist);
 
     }
 

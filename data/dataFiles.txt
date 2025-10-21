@@ -1,4 +1,5 @@
 1
+data/synthetic/directed/format/gml/example 6 betweenness.gml
 data/synthetic/directed/format/gml/example-0-with-two-extra-edges.gml
 data/blockchain/Bitcoin transactions (2009-2013).gml
 

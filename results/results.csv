@@ -1,9 +1,11 @@
 algorithm,graph,iteration,vertex,score
-SSSPPBetweenness,example-0-with-two-extra-edges,0,0,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,1,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,2,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,3,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,4,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,5,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,6,0
-SSSPPBetweenness,example-0-with-two-extra-edges,0,7,0
+SAASBetweenness,example 6 betweenness,0,0,0
+SAASBetweenness,example 6 betweenness,0,1,0
+SAASBetweenness,example 6 betweenness,0,2,0
+SAASBetweenness,example 6 betweenness,0,3,0
+SAASBetweenness,example 6 betweenness,0,4,0
+SAASBetweenness,example 6 betweenness,0,5,0
+SAASBetweenness,example 6 betweenness,0,6,0
+SAASBetweenness,example 6 betweenness,0,7,0
+SAASBetweenness,example 6 betweenness,0,8,0
+SAASBetweenness,example 6 betweenness,0,9,0

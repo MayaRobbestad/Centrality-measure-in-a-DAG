@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -28,10 +29,15 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
     private Graph<V, E> graph;
     private Map<V, Long> scores;
     private Map<V, Map<V, Integer>> dist;
+    private Map<V, Set<V>> P;
 
     public APSPSourceSinkBetweenness(Graph<V, E> graph) {
         this.graph = graph;
         this.scores = new HashMap<>();
+        this.P = new HashMap<>();
+        for (V v : graph.vertexSet()) {
+            P.put(v, new HashSet<>());
+        }
         run();
     }
 
@@ -114,6 +120,8 @@ public class APSPSourceSinkBetweenness<V, E> implements VertexScoringAlgorithm<V
     }
 
     private void bfs(V start) {
+
+        Stack<V> S = new Stack<>();
 
         Set<V> visited = new HashSet<>();
         Queue<V> toSearch = new LinkedList<>();
