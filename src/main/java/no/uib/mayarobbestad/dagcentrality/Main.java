@@ -56,10 +56,10 @@ public class Main {
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DISTRIBUTION = false;
-    static final boolean REACH = false;
+    static final boolean REACH = true;
     static final boolean DEPENDENCY = false;
     static final boolean APSP_SS_BETWEENNESS = false;
-    static final boolean SAAS_BETWEENNESS = true;
+    static final boolean SAAS_BETWEENNESS = false;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
@@ -89,6 +89,7 @@ public class Main {
             GreedyFAS.removeCycleFromDirectedGraph(graph);
         }
         storeCentralityScoresInCSV("results/results.csv", graphs);
+        storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv", "results/graphVisualization/");
 
         // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
         // storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
@@ -99,6 +100,81 @@ public class Main {
 
         // findXHighestVertices("results/results.csv",
         // "results/highestScores/highest.csv", "DAGPageRankCentrality","jdk", 1, 3);
+
+    }
+
+    private static void storeGraphAndCentralityInformationForDrawingInGephi(String resultsFile,
+            String visualizationFolder) throws IOException {
+
+        Scanner sc = new Scanner(new FileReader(new File(resultsFile)));
+        sc.useLocale(Locale.US);
+        sc.nextLine(); // skip the first line
+
+        for (int a = 0; a < numAlgorithms; a++) {
+            for (int g = 0; g < graphs.size(); g++) {
+
+                for (int i = 0; i <= iterationsNeededPerAlgorithm.get(a); i++) {
+
+                    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+                    String currentAlgorithmName = "";
+                    String currentGraphName = "";
+                    List<String> entries = new ArrayList<>();
+
+                    for (Integer v : graphs.get(g).vertexSet()) {
+                        String[] column = sc.nextLine().strip().split(",");
+                        String algorithmName = column[0];
+                        String graphName = column[1];
+                        Integer iteration = Integer.parseInt(column[2]);
+                        Integer vertex = Integer.parseInt(column[3]);
+                        Double score = Double.parseDouble(column[4]);
+                        if (currentAlgorithmName.equals("") && currentGraphName.equals("")) {
+                            currentAlgorithmName = algorithmName;
+                            currentGraphName = graphName;
+                        }
+                        String entry = vertex + "," + vertex + "," + score;
+                        entries.add(entry);
+
+                    }
+                    // creting a file for each graph only needs to be doe once
+                    if (a == 0) {
+                        createGraphEdgesFile(currentGraphName, g, visualizationFolder);
+                    }
+                    createGraphNodesWithScores(currentGraphName, currentAlgorithmName, entries, visualizationFolder);
+
+                }
+            }
+        }
+
+    }
+
+    private static void createGraphNodesWithScores(String currentGraphName, String currentAlgorithmName,
+            List<String> entries, String visualizationFolder) throws IOException {
+        File file = new File(visualizationFolder + currentAlgorithmName + "_" + currentGraphName + "_nodes.csv");
+        FileWriter writer = new FileWriter(file);
+
+        writer.write("Id,Label,Score\n"); // the columns
+        for (String entry : entries) {
+            writer.write(entry + "\n");
+
+        }
+        writer.close();
+
+    }
+
+    private static void createGraphEdgesFile(String currentGraphName, Integer graphId, String visualizationFolder)
+            throws IOException {
+        File file = new File(visualizationFolder + currentGraphName + "_edges.csv");
+        FileWriter writer = new FileWriter(file);
+        writer.write("Source,Target,Type\n"); // the columns
+        Graph<Integer, DefaultEdge> currentGraph = graphs.get(graphId);
+        for (DefaultEdge e : currentGraph.edgeSet()) {
+            Integer source = currentGraph.getEdgeSource(e);
+            Integer target = currentGraph.getEdgeTarget(e);
+            String type = "Directed";
+            writer.write(source + "," + target + "," + type + "\n");
+            // System.out.print(source + "," + target + "," + type + "\n");
+        }
+        writer.close();
 
     }
 

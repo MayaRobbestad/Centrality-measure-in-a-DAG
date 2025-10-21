@@ -103,7 +103,6 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
                     distanceFromStoAll.put(v, 1);
                 } else {
                     distanceFromStoAll.put(v, 0);
-
                 }
             }
             sigma.put(s, distanceFromStoAll);
@@ -131,6 +130,7 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
                         // a new significantly shorter shortest path has been found, therefore we reset
                         // the number of sp found to the number os hortest paths passing v
                         sigma.get(s).put(u, sigma.get(s).get(v));
+
                         sigma.get(s).put(u, 1);
 
                     }

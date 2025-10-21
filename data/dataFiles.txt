@@ -1,9 +1,9 @@
 1
+data/software/junit.gml
 data/synthetic/directed/format/gml/example 6 betweenness.gml
 data/synthetic/directed/format/gml/example-0-with-two-extra-edges.gml
 data/blockchain/Bitcoin transactions (2009-2013).gml
 
-data/software/junit.gml
 data/synthetic/directed/format/gml/example 0 with extra edge.gml
 data/synthetic/directed/format/gml/bottleneck.gml
 data/software/jdk.gml
