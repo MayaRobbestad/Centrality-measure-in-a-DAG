@@ -56,10 +56,10 @@ public class Main {
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DISTRIBUTION = false;
-    static final boolean REACH = true;
+    static final boolean REACH = false;
     static final boolean DEPENDENCY = false;
     static final boolean APSP_SS_BETWEENNESS = false;
-    static final boolean SAAS_BETWEENNESS = false;
+    static final boolean SAAS_BETWEENNESS = true;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
@@ -640,7 +640,7 @@ public class Main {
         if (SAAS_BETWEENNESS) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Long> centralityAlgorithm = new SAASBetweenness<>(
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new SAASBetweenness<>(
                         graphs.get(i));
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);

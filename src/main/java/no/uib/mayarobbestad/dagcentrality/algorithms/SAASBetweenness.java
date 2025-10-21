@@ -1,5 +1,6 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
 /**
@@ -21,15 +23,15 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
  * all other vertices, we calculate the score based on the number of shortest
  * paths from all sources to sinks
  */
-public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
+public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     private Graph<V, E> graph;
-    private Map<V, Long> scores;
+    private Map<V, BigDecimal> scores;
     private Map<V, Map<V, Long>> dist;
     private Set<V> sources;
     private Set<V> internal;
     private Set<V> sinks;
-    private Map<V, Map<V, Integer>> sigma;
+    private Map<V, Map<V, Long>> sigma;
 
     public SAASBetweenness(Graph<V, E> graph) {
         this.graph = graph;
@@ -43,7 +45,7 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
     }
 
     @Override
-    public Map<V, Long> getScores() {
+    public Map<V, BigDecimal> getScores() {
         if (scores == null) {
             run();
         }
@@ -51,7 +53,7 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
     }
 
     @Override
-    public Long getVertexScore(V v) {
+    public BigDecimal getVertexScore(V v) {
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
@@ -81,106 +83,71 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
                 this.internal.add(current); // internal
             }
             // all vertices start with score 0
-            scores.put(current, (long) 0);
+            scores.put(current, new BigDecimal("0"));
         }
 
         initializeDP();
 
-        // spFromSources(topologicalList);
-        // spFromSinks(topologicalList);
-        spFromSinksWithOptimization(topologicalList);
-        spFromSourcesAndSinksAndFindSigma(topologicalList);
+        spFromSources(topologicalList);
+        spFromSinks(topologicalList);
+        findSigma(topologicalList);
+        SAASCentrality();
+
+        System.out.println("sigma:" + sigma);
+
+        // spFromSinksWithOptimization(topologicalList);
+        // spFromSourcesAndSinksAndFindSigma(topologicalList);
 
         System.out.println("distance:" + dist);
     }
 
-    private void spFromSourcesAndSinksAndFindSigma(List<V> topologicalList) {
-
+    private void findSigma(List<V> topoList) {
         for (V s : this.sources) {
-            Map<V, Integer> distanceFromStoAll = new HashMap<>();
+            Map<V, Long> distanceFromStoAll = new HashMap<>();
             for (V v : graph.vertexSet()) {
                 if (v.equals(s)) {
-                    distanceFromStoAll.put(v, 1);
+                    distanceFromStoAll.put(v, (long) 1);
                 } else {
-                    distanceFromStoAll.put(v, 0);
+                    distanceFromStoAll.put(v, (long) 0);
                 }
             }
             sigma.put(s, distanceFromStoAll);
         }
-        System.out.println("graph:" + graph);
-        System.out.println("source" + sources);
-        System.out.println(topologicalList);
-        for (int i = 0; i < topologicalList.size(); i++) {
-            V v = topologicalList.get(i);
-            for (V s : sources) {
-                for (E e : graph.outgoingEdgesOf(v)) {
-                    V u = Graphs.getOppositeVertex(graph, e, v);
-                    // another shortest path has been found from s to u via v
-                    if (dist.get(s).get(v) + 1 == dist.get(s).get(u)) {
-                        // the number of shortest paths from s to u via v, is the number of shortest
-                        // paths
-                        // already going there plus the number of shortest paths going to v
-                        int numSPPaths = sigma.get(s).get(u) + sigma.get(s).get(v);
-                        sigma.get(s).put(u, numSPPaths);
-                    }
-                    // this shortest path is significantly shorter than the one found previously
-                    if (dist.get(s).get(v) + 1 < dist.get(s).get(u)) {
-                        // dist(s,u) = dist(s,v) + 1
-                        dist.get(s).put(u, dist.get(s).get(v) + 1);
-                        // a new significantly shorter shortest path has been found, therefore we reset
-                        // the number of sp found to the number os hortest paths passing v
-                        sigma.get(s).put(u, sigma.get(s).get(v));
 
-                        sigma.get(s).put(u, 1);
-
-                    }
-                    // if (dist.get(s).get(v))
-                    /*
-                     * // This means that the shortest path from s to u contains v
-                     * if (this.sinks.contains(u) && dist.get(s).get(v) + 1 == dist.get(s).get(u)) {
-                     * // number of paths from s to u (t)
-                     * // found another path
-                     * Integer numPaths = sigma.get(s).get(u) + 1;
-                     * // increment the score
-                     * sigma.get(s).put(u, numPaths);
-                     * }
-                     */
-
-                }
-            }
-
-        }
-        System.out.println("sigma:" + this.sigma);
-
-        for (int i = topologicalList.size() - 1; i > 0; i--) {
-            V v = topologicalList.get(i);
-            if (this.sources.contains(v)) {
-                // skip computing shortest path from source to sink again
-                continue;
-            }
-            for (V t : sinks) {
+        for (V s : this.sources) {
+            for (int i = 0; i < topoList.size(); i++) {
+                V v = topoList.get(i);
+                long numSP = sigma.get(s).get(v);
                 for (E e : graph.incomingEdgesOf(v)) {
-                    V u = Graphs.getOppositeVertex(graph, e, v);
-                    if (dist.get(v).get(t) < dist.get(u).get(t)) {
-                        // dist(s,u) = dist(s,v) + 1
-                        dist.get(u).put(t, dist.get(v).get(t) + 1);
+                    V w = Graphs.getOppositeVertex(graph, e, v);
+                    if (this.dist.get(s).get(w) + 1 == this.dist.get(s).get(v)) {
+                        numSP += sigma.get(s).get(w);
                     }
                 }
+                sigma.get(s).put(v, numSP);
             }
         }
+
     }
 
-    private void APSPNotNormalized(Set<V> sources, Set<V> internal, Set<V> sinks) {
-        for (V s : sources) {
-            for (V t : sinks) {
+    /**
+     * The actual implementation of SAAS-Betweenness
+     * This method is not normalized
+     * 
+     * @param sources
+     * @param internal
+     * @param sinks
+     */
+    private void SAASCentrality() {
+        for (V s : this.sources) {
+            for (V t : this.sinks) {
                 if (!dist.get(s).containsKey(t)) // t not reachable from s
                     continue;
-                for (V v : internal) {
+                for (V v : this.internal) {
                     if (!dist.get(s).containsKey(v) || !dist.get(v).containsKey(t))
                         continue;
                     if (dist.get(s).get(v) + dist.get(v).get(t) == dist.get(s).get(t))
-
-                        scores.put(v, scores.get(v) + 1);
+                        scores.put(v, scores.get(v).add(BigDecimal.ONE.divide(new BigDecimal(sigma.get(s).get(t)))));
                 }
             }
         }
@@ -276,4 +243,50 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, Long> {
 
     }
 
+    /*
+     * private void spFromSourcesAndSinksAndFindSigma(List<V> topologicalList) {
+     * 
+     * for (V s : this.sources) {
+     * Map<V, Integer> distanceFromStoAll = new HashMap<>();
+     * for (V v : graph.vertexSet()) {
+     * if (v.equals(s)) {
+     * distanceFromStoAll.put(v, 1);
+     * } else {
+     * distanceFromStoAll.put(v, 0);
+     * }
+     * }
+     * sigma.put(s, distanceFromStoAll);
+     * }
+     * 
+     * System.out.println(topologicalList);
+     * for (int i = 0; i < topologicalList.size(); i++) {
+     * V v = topologicalList.get(i);
+     * for (V s : sources) {
+     * for (E e : graph.outgoingEdgesOf(v)) {
+     * V u = Graphs.getOppositeVertex(graph, e, v);
+     * 
+     * }
+     * }
+     * 
+     * }
+     * System.out.println("sigma:" + this.sigma);
+     * 
+     * for (int i = topologicalList.size() - 1; i > 0; i--) {
+     * V v = topologicalList.get(i);
+     * if (this.sources.contains(v)) {
+     * // skip computing shortest path from source to sink again
+     * continue;
+     * }
+     * for (V t : sinks) {
+     * for (E e : graph.incomingEdgesOf(v)) {
+     * V u = Graphs.getOppositeVertex(graph, e, v);
+     * if (dist.get(v).get(t) < dist.get(u).get(t)) {
+     * // dist(s,u) = dist(s,v) + 1
+     * dist.get(u).put(t, dist.get(v).get(t) + 1);
+     * }
+     * }
+     * }
+     * }
+     * }
+     */
 }

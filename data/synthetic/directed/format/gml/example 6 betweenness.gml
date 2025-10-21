@@ -1,7 +1,7 @@
 graph [
     directed 1
     n 7
-    m 19
+    m 18
     description "Example I came up with at 21/10/2025 to test SAAS-betweenness"
     node [
         id 0
@@ -109,8 +109,4 @@ graph [
         source 8
         target 9
     ]    
-    edge[
-        source 0
-        target 7
-    ]
 ]
