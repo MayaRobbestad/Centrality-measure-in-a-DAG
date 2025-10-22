@@ -56,20 +56,20 @@ public class Main {
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
     static final boolean DISTRIBUTION = false;
-    static final boolean REACH = false;
-    static final boolean DEPENDENCY = false;
+    static final boolean REACH = true;
+    static final boolean DEPENDENCY = true;
     static final boolean APSP_SS_BETWEENNESS = false;
-    static final boolean SAAS_BETWEENNESS = true;
+    static final boolean SAAS_BETWEENNESS = false;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = true;
+    static boolean USEITERATIONS = false;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 5; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 10; // the number of times the algorithm will run, applicable for PageRank
 
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
@@ -86,14 +86,18 @@ public class Main {
         readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
 
         for (Graph<Integer, DefaultEdge> graph : graphs) {
+            // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+            // graph.edgeSet().size());
             GreedyFAS.removeCycleFromDirectedGraph(graph);
+            // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+            // graph.edgeSet().size());
         }
         storeCentralityScoresInCSV("results/results.csv", graphs);
         storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv", "results/graphVisualization/");
 
         // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
-        // storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
-
+        storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
+        readRuntimesFromCSVStoreInChart("results/runtime/timings.csv", "results/runtime/charts/");
         // String algo = "";
         // readCSVRuntimeResultsAndStoreInChart("results/runtime/results/" + algo,
         // "results/runtime/charts");
@@ -101,6 +105,11 @@ public class Main {
         // findXHighestVertices("results/results.csv",
         // "results/highestScores/highest.csv", "DAGPageRankCentrality","jdk", 1, 3);
 
+    }
+
+    private static void readRuntimesFromCSVStoreInChart(String string, String string2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'readRuntimesFromCSVStoreInChart'");
     }
 
     private static void storeGraphAndCentralityInformationForDrawingInGephi(String resultsFile,
@@ -136,9 +145,12 @@ public class Main {
 
                     }
                     // creting a file for each graph only needs to be doe once
+                    // not necessary
+
                     if (a == 0) {
                         createGraphEdgesFile(currentGraphName, g, visualizationFolder);
                     }
+
                     createGraphNodesWithScores(currentGraphName, currentAlgorithmName, entries, visualizationFolder);
 
                 }
@@ -199,9 +211,27 @@ public class Main {
         int numGraphs = graphs.size();
 
         if (REACH) {
-
             for (int i = 0; i < numGraphs; i++) {
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                VertexScoringAlgorithm centralityAlgorithm = new Reach<>(graphs.get(i), false, true);
+                int n = graphs.get(i).vertexSet().size();
+                // this is where the algorithm is run with .getScores
+                long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
+                double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
+                StringBuilder builder = new StringBuilder();
+                builder.append(
+                        centralityAlgorithm.getClass().getSimpleName() + ","
+                                + graphName + ","
+                                + DEFAULTITERATIONS + ","
+                                + n + ","
+                                + timeElapsedSeconds + "\n");
+                writer.write(builder.toString());
+            }
+        }
 
+        if (DEPENDENCY) {
+            for (int i = 0; i < numGraphs; i++) {
                 String path = graphDirectory.get(i);
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 VertexScoringAlgorithm centralityAlgorithm = new Reach<>(graphs.get(i), false, true);
@@ -246,10 +276,27 @@ public class Main {
                 writer.write(builder.toString());
             }
         }
-        if (APSP_SS_BETWEENNESS) {
-            String centralityName = "Betweenness Centrality";
+        if (SAAS_BETWEENNESS) {
             for (int i = 0; i < numGraphs; i++) {
 
+                String path = graphDirectory.get(i);
+                String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
+                VertexScoringAlgorithm centralityAlgorithm = new SAASBetweenness<>(graphs.get(i));
+                int n = graphs.get(i).vertexSet().size();
+
+                // this is where the algorithm is run with .getScores
+                long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
+                double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
+                StringBuilder builder = new StringBuilder();
+
+                builder.append(
+                        centralityAlgorithm.getClass().getSimpleName() + ","
+                                + graphName + ","
+                                + MAXITERATIONS + ","
+                                + n + ","
+                                + timeElapsedSeconds + "\n");
+
+                writer.write(builder.toString());
             }
         }
         writer.close();

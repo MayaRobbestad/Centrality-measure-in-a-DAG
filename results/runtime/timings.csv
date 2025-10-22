@@ -1,6 +1,5 @@
 algorithm,graph,iteration,vertices,time
-Reach,jdk,0,6488,1.06E-4
-Reach,javax,0,3310,1.9E-5
-Reach,java,0,2379,0.0
-Reach,cora,0,23166,0.0
-Reach,junit,0,181,0.0
+Reach,jdk,0,6488,0.076121
+Reach,junit,0,181,0.001542
+Reach,jdk,0,6488,0.071794
+Reach,junit,0,181,3.81E-4

@@ -1,4 +1,9 @@
-6
+2
+data/software/jdk.gml
+data/software/junit.gml
+data/synthetic/directed/format/gml/example 0.gml
+data/synthetic/directed/format/gml/modified_Krackhardt_Kite_Graph.gml
+data/synthetic/directed/format/gml/example-0-with-two-extra-edges.gml
 data/synthetic/directed/format/gml/bottleneck.gml
 data/synthetic/directed/format/gml/path.gml
 data/synthetic/directed/format/gml/star-out.gml
@@ -6,13 +11,9 @@ data/synthetic/directed/format/gml/star-in.gml
 data/synthetic/directed/format/gml/funnel.gml
 data/synthetic/directed/format/gml/fork.gml
 
-data/synthetic/directed/format/gml/example-0-with-two-extra-edges.gml
 data/synthetic/directed/format/gml/example 5 betweenness.gml
-data/software/junit.gml
 data/blockchain/Bitcoin transactions (2009-2013).gml
 
-data/synthetic/directed/format/gml/example-0.gml
-data/software/jdk.gml
 data/software/javax.gml
 data/software/java.gml
 data/citation/cora.gml

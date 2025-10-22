@@ -1,6 +1,7 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,12 +94,9 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
         findSigma(topologicalList);
         SAASCentrality();
 
-        System.out.println("sigma:" + sigma);
-
         // spFromSinksWithOptimization(topologicalList);
         // spFromSourcesAndSinksAndFindSigma(topologicalList);
 
-        System.out.println("distance:" + dist);
     }
 
     private void findSigma(List<V> topoList) {
@@ -147,7 +145,8 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
                     if (!dist.get(s).containsKey(v) || !dist.get(v).containsKey(t))
                         continue;
                     if (dist.get(s).get(v) + dist.get(v).get(t) == dist.get(s).get(t))
-                        scores.put(v, scores.get(v).add(BigDecimal.ONE.divide(new BigDecimal(sigma.get(s).get(t)))));
+                        scores.put(v, scores.get(v).add(
+                                BigDecimal.ONE.divide(new BigDecimal(sigma.get(s).get(t)), 5, RoundingMode.HALF_UP)));
                 }
             }
         }
@@ -239,7 +238,6 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
             }
             dist.put(v, sinkToSink);
         }
-        System.out.println("dp initialized:" + dist);
 
     }
 
