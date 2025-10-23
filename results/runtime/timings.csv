@@ -1,5 +1,8 @@
 algorithm,graph,iteration,vertices,time
-Reach,jdk,0,6488,0.076121
-Reach,junit,0,181,0.001542
-Reach,jdk,0,6488,0.071794
-Reach,junit,0,181,3.81E-4
+Reach,bottleneck,0,5,4.26E-4
+Reach,path,0,4,6.76E-4
+Reach,star-out,0,5,1.35E-4
+Reach,star-in,0,5,6.9E-5
+Reach,funnel,0,6,9.2E-5
+Reach,fork,0,6,6.9E-5
+Reach,example 0,0,8,1.01E-4

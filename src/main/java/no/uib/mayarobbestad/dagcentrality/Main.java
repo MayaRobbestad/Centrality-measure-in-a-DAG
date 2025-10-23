@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,11 +26,11 @@ import org.jgrapht.alg.scoring.PageRank;
 import org.jgrapht.graph.DefaultEdge;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.APSPSourceSinkBetweenness;
+import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
 import no.uib.mayarobbestad.dagcentrality.algorithms.Distribution;
+import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.algorithms.Reach;
 import no.uib.mayarobbestad.dagcentrality.algorithms.SAASBetweenness;
-import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
-import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
 import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 
@@ -57,7 +56,7 @@ public class Main {
     static final boolean PAGERANK = false;
     static final boolean DISTRIBUTION = false;
     static final boolean REACH = true;
-    static final boolean DEPENDENCY = true;
+    static final boolean DEPENDENCY = false;
     static final boolean APSP_SS_BETWEENNESS = false;
     static final boolean SAAS_BETWEENNESS = false;
 
@@ -66,10 +65,10 @@ public class Main {
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = false;
+    static boolean USEITERATIONS = true;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 10; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 15; // the number of times the algorithm will run, applicable for PageRank
 
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
@@ -95,7 +94,7 @@ public class Main {
         storeCentralityScoresInCSV("results/results.csv", graphs);
         storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv", "results/graphVisualization/");
 
-        // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
+        readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
         storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
         readRuntimesFromCSVStoreInChart("results/runtime/timings.csv", "results/runtime/charts/");
         // String algo = "";
@@ -107,9 +106,43 @@ public class Main {
 
     }
 
-    private static void readRuntimesFromCSVStoreInChart(String string, String string2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'readRuntimesFromCSVStoreInChart'");
+    private static void readRuntimesFromCSVStoreInChart(String file, String folder) throws IOException {
+        Scanner sc = new Scanner(new FileReader(new File(file)));
+        sc.useLocale(Locale.US);
+        sc.nextLine(); // skip the first line
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        for (int a = 0; a < numAlgorithms; a++) {
+            for (int g = 0; g < graphs.size(); g++) {
+                for (int i = 0; i <= iterationsNeededPerAlgorithm.get(a); i++) {
+                    // linechart
+
+                    String currentAlgorithmName = "";
+                    String currentGraphName = "";
+
+                    String[] column = sc.nextLine().strip().split(",");
+                    String algorithmName = column[0];
+                    String graphName = column[1];
+                    Integer iteration = Integer.parseInt(column[2]);
+                    Integer n = Integer.parseInt(column[3]);
+                    Double timeInSeconds = Double.parseDouble(column[4]);
+
+                    if (currentAlgorithmName.equals("") && currentGraphName.equals("")) {
+                        currentAlgorithmName = algorithmName;
+                        currentGraphName = graphName;
+                    }
+                    dataset.addValue(timeInSeconds, algorithmName, n);
+                }
+            }
+        }
+        JFreeChart lineChartObject = ChartFactory.createLineChart(
+                "n Vs time", "n",
+                "time in seconds",
+                dataset, PlotOrientation.VERTICAL,
+                true, true, false);
+        int width = 640; /* Width of the image */
+        int height = 480; /* Height of the image */
+        File lineChart = new File(folder + "LineChart.png");
+        ChartUtils.saveChartAsPNG(lineChart, lineChartObject, width, height);
     }
 
     private static void storeGraphAndCentralityInformationForDrawingInGephi(String resultsFile,
@@ -357,6 +390,9 @@ public class Main {
                     String currentAlgorithmName = "";
                     String currentGraphName = "";
 
+                    // TODO: remove later
+                    // String[] alphabet = { "A", "B", "C", "D", "E", "F", "G", "H" };
+
                     for (Integer v : graphs.get(g).vertexSet()) {
                         String[] column = sc.nextLine().strip().split(",");
                         String algorithmName = column[0];
@@ -369,10 +405,11 @@ public class Main {
                             currentGraphName = graphName;
                         }
                         dataset.addValue(score, graphName + " in iteration " + i, v);
+                        // dataset.addValue(score, graphName + " in iteration " + i, alphabet[v]);
                     }
                     // title =currentAlgorithmName + " algorithm on " + currentGraphName + " graph"
                     JFreeChart barChart = ChartFactory.createBarChart(
-                            currentAlgorithmName + " algorithm on " + currentGraphName + " graph",
+                            "currentAlgorithmName + \" algorithm on \" + currentGraphName + \" graph\"v",
                             "Vertices", "Centrality Score",
                             dataset, PlotOrientation.VERTICAL, true, true, false);
 
