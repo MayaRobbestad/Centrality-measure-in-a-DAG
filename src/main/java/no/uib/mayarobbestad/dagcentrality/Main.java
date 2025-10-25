@@ -56,9 +56,9 @@ public class Main {
     static final boolean PAGERANK = false;
     static final boolean DISTRIBUTION = false;
     static final boolean REACH = true;
-    static final boolean DEPENDENCY = false;
+    static final boolean DEPENDENCY = true;
     static final boolean APSP_SS_BETWEENNESS = false;
-    static final boolean SAAS_BETWEENNESS = false;
+    static final boolean SAAS_BETWEENNESS = true;
 
     static ArrayList<Integer> iterationsNeededPerAlgorithm = new ArrayList<>();
 
@@ -274,9 +274,9 @@ public class Main {
                 long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
                 double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
                 StringBuilder builder = new StringBuilder();
-
+                // todo:split reach and dependency algorithm
                 builder.append(
-                        centralityAlgorithm.getClass().getSimpleName() + ","
+                        "Dependency" + ","
                                 + graphName + ","
                                 + DEFAULTITERATIONS + ","
                                 + n + ","
