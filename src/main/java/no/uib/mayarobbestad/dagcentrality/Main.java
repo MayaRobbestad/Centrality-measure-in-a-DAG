@@ -49,6 +49,7 @@ import no.uib.mayarobbestad.dagcentrality.algorithms.Reach;
 import no.uib.mayarobbestad.dagcentrality.algorithms.SAASBetweenness;
 import no.uib.mayarobbestad.dagcentrality.datastructures.VertexScore;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
+import no.uib.mayarobbestad.dagcentrality.graph.RandomDagGenerator;
 
 public class Main {
 
@@ -97,27 +98,29 @@ public class Main {
     static int DEFAULTITERATIONS = 0;
 
     public static void main(String[] args) throws IOException, BadElementException, DocumentException {
+        RandomDagGenerator.GenerateRandomDag(15, 6, "data/random/");
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-        /*
-         * readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-         * 
-         * for (Graph<Integer, DefaultEdge> graph : graphs) {
-         * // System.out.println("n=" + graph.vertexSet().size() + " m=" +
-         * // graph.edgeSet().size());
-         * GreedyFAS.removeCycleFromDirectedGraph(graph);
-         * // System.out.println("n=" + graph.vertexSet().size() + " m=" +
-         * // graph.edgeSet().size());
-         * }
-         * storeCentralityScoresInCSV("results/results.csv", graphs);
-         * storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv",
-         * "results/graphVisualization/");
-         * 
-         * readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
-         * storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
-         * readRuntimesFromCSVStoreInChart("results/runtime/timings.csv",
-         * "results/runtime/charts/");
-         */
-        generatePDFFromImage("results/runtime/charts/LineChart.png");
+
+        // readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+
+        // for (Graph<Integer, DefaultEdge> graph : graphs) {
+        // // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+        // // graph.edgeSet().size());
+        // GreedyFAS.removeCycleFromDirectedGraph(graph);
+        // // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+        // // graph.edgeSet().size());
+        // }
+        // storeCentralityScoresInCSV("results/results.csv", graphs);
+        // storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv",
+        // "results/graphVisualization/");
+
+        // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
+        // storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
+        // readRuntimesFromCSVStoreInChart("results/runtime/timings.csv",
+        // "results/runtime/charts/");
+
+        // generatePDFFromImage("results/runtime/charts/LineChart.png");
+
         // convertPNGtoPDF("results/runtime/charts/LineChart.png",
         // "results/runtime/charts/");
         // String algo = "";
