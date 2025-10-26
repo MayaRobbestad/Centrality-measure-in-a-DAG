@@ -163,6 +163,7 @@ public class GreedyFAS {
          * System.out.println(e);
          * }
          */
+
         return toRemove;
     }
 

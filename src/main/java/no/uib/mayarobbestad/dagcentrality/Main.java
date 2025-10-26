@@ -1,10 +1,13 @@
 package no.uib.mayarobbestad.dagcentrality;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,8 +17,13 @@ import java.util.Scanner;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.alg.scoring.BetweennessCentrality;
@@ -24,6 +32,14 @@ import org.jgrapht.alg.scoring.HarmonicCentrality;
 import org.jgrapht.alg.scoring.KatzCentrality;
 import org.jgrapht.alg.scoring.PageRank;
 import org.jgrapht.graph.DefaultEdge;
+
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import no.uib.mayarobbestad.dagcentrality.algorithms.APSPSourceSinkBetweenness;
 import no.uib.mayarobbestad.dagcentrality.algorithms.DegreeCentrality;
@@ -42,6 +58,7 @@ public class Main {
     // The graphs to be run
     static ArrayList<Graph<Integer, DefaultEdge>> graphs = new ArrayList<>();
     static ArrayList<String> graphDirectory = new ArrayList<>();
+    static List<String> algorithmNames = new ArrayList<>();
 
     // The centrality algorithms to be run
     static final boolean DEGREE = false;
@@ -54,7 +71,7 @@ public class Main {
     static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
-    static final boolean DISTRIBUTION = false;
+    static final boolean DISTRIBUTION = true;
     static final boolean REACH = true;
     static final boolean DEPENDENCY = true;
     static final boolean APSP_SS_BETWEENNESS = false;
@@ -65,10 +82,10 @@ public class Main {
     static int numAlgorithms = 0;
 
     static int iteration = 0;
-    static boolean USEITERATIONS = true;
+    static boolean USEITERATIONS = false;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 15; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 10; // the number of times the algorithm will run, applicable for PageRank
 
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
@@ -79,24 +96,30 @@ public class Main {
     // 0 iterations
     static int DEFAULTITERATIONS = 0;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, BadElementException, DocumentException {
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-
-        readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
-
-        for (Graph<Integer, DefaultEdge> graph : graphs) {
-            // System.out.println("n=" + graph.vertexSet().size() + " m=" +
-            // graph.edgeSet().size());
-            GreedyFAS.removeCycleFromDirectedGraph(graph);
-            // System.out.println("n=" + graph.vertexSet().size() + " m=" +
-            // graph.edgeSet().size());
-        }
-        storeCentralityScoresInCSV("results/results.csv", graphs);
-        storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv", "results/graphVisualization/");
-
-        readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
-        storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
-        readRuntimesFromCSVStoreInChart("results/runtime/timings.csv", "results/runtime/charts/");
+        /*
+         * readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+         * 
+         * for (Graph<Integer, DefaultEdge> graph : graphs) {
+         * // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+         * // graph.edgeSet().size());
+         * GreedyFAS.removeCycleFromDirectedGraph(graph);
+         * // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+         * // graph.edgeSet().size());
+         * }
+         * storeCentralityScoresInCSV("results/results.csv", graphs);
+         * storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv",
+         * "results/graphVisualization/");
+         * 
+         * readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
+         * storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
+         * readRuntimesFromCSVStoreInChart("results/runtime/timings.csv",
+         * "results/runtime/charts/");
+         */
+        generatePDFFromImage("results/runtime/charts/LineChart.png");
+        // convertPNGtoPDF("results/runtime/charts/LineChart.png",
+        // "results/runtime/charts/");
         // String algo = "";
         // readCSVRuntimeResultsAndStoreInChart("results/runtime/results/" + algo,
         // "results/runtime/charts");
@@ -106,15 +129,60 @@ public class Main {
 
     }
 
+    private static void generatePDFFromImage(String input)
+            throws BadElementException, MalformedURLException, DocumentException, IOException {
+
+        Image img = Image.getInstance(input);
+        float imgWidth = img.getWidth();
+        float imgHeight = img.getHeight();
+        Document document = new Document(new Rectangle(imgWidth, imgHeight));
+
+        String filePath = input.split("\\.")[0];
+
+        String output = filePath + ".pdf";
+        FileOutputStream fos = new FileOutputStream(output);
+
+        PdfWriter writer = PdfWriter.getInstance(document, fos);
+        writer.open();
+        document.open();
+        img.setAbsolutePosition(0, 0);
+        document.add(img);
+        document.close();
+        writer.close();
+    }
+
+    /**
+     * Creates a pdf version of the png file.
+     * Given a png file and a folder destination for the pdf
+     * code from:
+     * https://stackoverflow.com/questions/8361901/how-can-i-convert-a-png-file-to-
+     * pdf-using-java
+     */
+    /*
+     * private static void convertPNGtoPDF(String pngFile, String folder) {
+     * String fileName = pngFile.split(".")[0];
+     * 
+     * Document document = new Document();
+     * PdfWriter.getInstance(document, new FileOutputStream(folder + fileName +
+     * ".pdf"));
+     * document.open();
+     * Image image = Image.getInstance(getClass().getResource("/logo.png"));
+     * document.add(image);
+     * document.close();
+     * }
+     */
+
     private static void readRuntimesFromCSVStoreInChart(String file, String folder) throws IOException {
         Scanner sc = new Scanner(new FileReader(new File(file)));
         sc.useLocale(Locale.US);
         sc.nextLine(); // skip the first line
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        // DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        XYSeriesCollection series = new XYSeriesCollection();
         for (int a = 0; a < numAlgorithms; a++) {
+            XYSeries dataset = new XYSeries(algorithmNames.get(a), true);
             for (int g = 0; g < graphs.size(); g++) {
                 for (int i = 0; i <= iterationsNeededPerAlgorithm.get(a); i++) {
-                    // linechart
 
                     String currentAlgorithmName = "";
                     String currentGraphName = "";
@@ -125,24 +193,32 @@ public class Main {
                     Integer iteration = Integer.parseInt(column[2]);
                     Integer n = Integer.parseInt(column[3]);
                     Double timeInSeconds = Double.parseDouble(column[4]);
+                    // Long timeInMicro = Long.parseLong(column[4]);
 
                     if (currentAlgorithmName.equals("") && currentGraphName.equals("")) {
                         currentAlgorithmName = algorithmName;
                         currentGraphName = graphName;
                     }
-                    dataset.addValue(timeInSeconds, algorithmName, n);
+                    // change to m
+                    dataset.add(n, timeInSeconds);
                 }
             }
+            series.addSeries(dataset);
         }
-        JFreeChart lineChartObject = ChartFactory.createLineChart(
-                "n Vs time", "n",
-                "time in seconds",
-                dataset, PlotOrientation.VERTICAL,
-                true, true, false);
+
+        JFreeChart xyPlot = ChartFactory.createXYLineChart("runtime", "n", "time (in seconds)", series);
+        XYPlot plot = xyPlot.getXYPlot();
+        plot.setDomainAxis(new NumberAxis("n"));
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setDefaultLinesVisible(false);
+        renderer.setDefaultShapesVisible(true);
+        plot.setRenderer(renderer);
+
         int width = 640; /* Width of the image */
         int height = 480; /* Height of the image */
-        File lineChart = new File(folder + "LineChart.png");
-        ChartUtils.saveChartAsPNG(lineChart, lineChartObject, width, height);
+        File runtimeChart = new File(folder + "LineChart.png");
+        ChartUtils.saveChartAsPNG(runtimeChart, xyPlot, width, height);
+
     }
 
     private static void storeGraphAndCentralityInformationForDrawingInGephi(String resultsFile,
@@ -449,6 +525,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Degree");
             numAlgorithms++;
         }
         if (INDEGREE) {
@@ -469,6 +546,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("In-Degree");
             numAlgorithms++;
         }
         if (OUTDEGREE) {
@@ -489,6 +567,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Out-Degree");
             numAlgorithms++;
         }
         if (INHARMONIC) {
@@ -510,6 +589,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("In-Harmonic");
             numAlgorithms++;
         }
         if (OUTHARMONIC) {
@@ -530,6 +610,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Out-Harmonic");
             numAlgorithms++;
         }
         if (BETWEENNESS) {
@@ -550,6 +631,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Betweenness");
             numAlgorithms++;
         }
         if (EIGENVECTOR) {
@@ -570,6 +652,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Eigenvector");
             numAlgorithms++;
         }
         if (KATZ) {
@@ -589,6 +672,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Katz");
             numAlgorithms++;
         }
         if (PAGERANK) {
@@ -608,6 +692,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("PageRank");
             numAlgorithms++;
         }
         if (DISTRIBUTION && !USEITERATIONS) {
@@ -629,6 +714,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Distribution");
             numAlgorithms++;
         }
         if (DISTRIBUTION && USEITERATIONS) {
@@ -653,14 +739,15 @@ public class Main {
                     writer.write(builder.toString());
                 }
             }
+            algorithmNames.add("Distribution");
             numAlgorithms++;
         }
 
         if (REACH) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Integer> centralityAlgorithm = new Reach<>(
-                        graphs.get(i), false, true);
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Reach<>(
+                        graphs.get(i), true, true);
                 centralityAlgorithm.getScores(); // run the algorithm
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
@@ -675,14 +762,15 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Reach");
             numAlgorithms++;
         }
 
         if (DEPENDENCY) {
             iterationsNeededPerAlgorithm.add(numAlgorithms, DEFAULTITERATIONS);
             for (int i = 0; i < numGraphs; i++) {
-                VertexScoringAlgorithm<Integer, Integer> centralityAlgorithm = new Reach<>(
-                        graphs.get(i), false, false);
+                VertexScoringAlgorithm<Integer, BigDecimal> centralityAlgorithm = new Reach<>(
+                        graphs.get(i), true, false);
                 centralityAlgorithm.getScores(); // run the algorithm
                 StringBuilder builder = new StringBuilder();
                 String path = graphDirectory.get(i);
@@ -697,6 +785,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("Dependency");
             numAlgorithms++;
         }
 
@@ -739,6 +828,7 @@ public class Main {
                 }
                 writer.write(builder.toString());
             }
+            algorithmNames.add("SAAS-Betweenness");
             numAlgorithms++;
         }
         writer.close();

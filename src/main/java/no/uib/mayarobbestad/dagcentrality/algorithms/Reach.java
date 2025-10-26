@@ -1,5 +1,7 @@
 package no.uib.mayarobbestad.dagcentrality.algorithms;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,10 +15,10 @@ import org.jgrapht.Graphs;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 
-public class Reach<V, E> implements VertexScoringAlgorithm<V, Integer> {
+public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     private Graph<V, E> graph;
-    private Map<V, Integer> scores;
+    private Map<V, BigDecimal> scores;
     private boolean normalize;
     private CentralityState state;
 
@@ -51,7 +53,7 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, Integer> {
     }
 
     @Override
-    public Map<V, Integer> getScores() {
+    public Map<V, BigDecimal> getScores() {
 
         if (scores.isEmpty()) {
             run();
@@ -60,7 +62,7 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, Integer> {
     }
 
     @Override
-    public Integer getVertexScore(V v) {
+    public BigDecimal getVertexScore(V v) {
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
@@ -89,13 +91,13 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, Integer> {
 
         for (V v : graph.vertexSet()) {
             if (!normalize) {
-                Integer score = reached.get(v).size();
-                scores.put(v, score);
+                int score = reached.get(v).size();
+                scores.put(v, new BigDecimal(score));
             }
             if (normalize) {
-                Integer n = graph.vertexSet().size() - 1;
-                Integer score = reached.get(v).size();
-                scores.put(v, score / n);
+                int n = graph.vertexSet().size() - 1;
+                int score = reached.get(v).size();
+                scores.put(v, new BigDecimal(score).divide(new BigDecimal(n), 5, RoundingMode.HALF_EVEN));
             }
         }
 
