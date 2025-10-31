@@ -42,7 +42,7 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
         this.internal = new HashSet<>();
         this.sinks = new HashSet<>();
         this.sigma = new HashMap<>();
-        run();
+        // run();
     }
 
     @Override
@@ -55,11 +55,12 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
 
     @Override
     public BigDecimal getVertexScore(V v) {
+        // stupid solution, however the algorithm should run when detVertexScore is
+        // called
+        run();
+
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
-        }
-        if (scores == null) {
-            run();
         }
         return getScores().get(v);
     }

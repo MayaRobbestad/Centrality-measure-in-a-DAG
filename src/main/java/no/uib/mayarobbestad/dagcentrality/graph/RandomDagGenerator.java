@@ -19,7 +19,7 @@ public class RandomDagGenerator {
      * @param m
      * @throws IOException
      */
-    public static void GenerateRandomDag(int n, int m, String folder) throws IOException {
+    public static String GenerateRandomDag(int n, int m, String folder) throws IOException {
         List<List<Integer>> adjacencyList = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             adjacencyList.add(new ArrayList<>());
@@ -46,10 +46,10 @@ public class RandomDagGenerator {
             adjacencyList.get(source).add(target);
             i++;
         }
-        storeInGMLFormat(adjacencyList, n, m, folder);
+        return storeInGMLFormat(adjacencyList, n, m, folder);
     }
 
-    private static void storeInGMLFormat(List<List<Integer>> adjacencyList, int n, int m, String folder)
+    private static String storeInGMLFormat(List<List<Integer>> adjacencyList, int n, int m, String folder)
             throws IOException {
         String path = folder + "random_dag_with_" + n + "_vertices" + m + "_edges.gml";
         File file = new File(path);
@@ -69,6 +69,20 @@ public class RandomDagGenerator {
             }
         }
         writer.write("]");
+        writer.close();
+        return path;
+    }
+
+    public static void main(String[] args) throws IOException {
+        String folder = "data/random/";
+        String allDags = folder + "random_dag_paths";
+        File file = new File(allDags);
+        file.createNewFile();
+        FileWriter writer = new FileWriter(file);
+        for (int i = 1; i < 10; i++) {
+            String path = RandomDagGenerator.GenerateRandomDag(5000, i * 5000, folder);
+            writer.write(path + "\n");
+        }
         writer.close();
     }
 }

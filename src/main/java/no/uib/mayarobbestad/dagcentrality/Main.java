@@ -72,9 +72,9 @@ public class Main {
     static final boolean EIGENVECTOR = false;
     static final boolean KATZ = false;
     static final boolean PAGERANK = false;
-    static final boolean DISTRIBUTION = true;
-    static final boolean REACH = true;
-    static final boolean DEPENDENCY = true;
+    static final boolean DISTRIBUTION = false;
+    static final boolean REACH = false;
+    static final boolean DEPENDENCY = false;
     static final boolean APSP_SS_BETWEENNESS = false;
     static final boolean SAAS_BETWEENNESS = true;
 
@@ -86,7 +86,7 @@ public class Main {
     static boolean USEITERATIONS = false;
 
     // algorithm will run MAXITERATIONS - 1 times
-    static int MAXITERATIONS = 10; // the number of times the algorithm will run, applicable for PageRank
+    static int MAXITERATIONS = 5; // the number of times the algorithm will run, applicable for PageRank
 
     // algorithm will run 1 iteration
     // Slightly misleading for PageRank, since we will do the maxiterations, but we
@@ -98,37 +98,30 @@ public class Main {
     static int DEFAULTITERATIONS = 0;
 
     public static void main(String[] args) throws IOException, BadElementException, DocumentException {
-        RandomDagGenerator.GenerateRandomDag(15, 6, "data/random/");
+
         // readAndStoreInputGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
 
-        // readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
+        readAndStoreGmlGraphs("data/dataFiles.txt", graphs, graphDirectory, true);
 
-        // for (Graph<Integer, DefaultEdge> graph : graphs) {
-        // // System.out.println("n=" + graph.vertexSet().size() + " m=" +
-        // // graph.edgeSet().size());
-        // GreedyFAS.removeCycleFromDirectedGraph(graph);
-        // // System.out.println("n=" + graph.vertexSet().size() + " m=" +
-        // // graph.edgeSet().size());
-        // }
-        // storeCentralityScoresInCSV("results/results.csv", graphs);
-        // storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv",
-        // "results/graphVisualization/");
+        for (Graph<Integer, DefaultEdge> graph : graphs) {
+            // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+            // graph.edgeSet().size());
+            GreedyFAS.removeCycleFromDirectedGraph(graph);
+            // System.out.println("n=" + graph.vertexSet().size() + " m=" +
+            // graph.edgeSet().size());
+        }
+        // needs to be run prior to runtime charts
+        storeCentralityScoresInCSV("results/results.csv", graphs);
+        // storeGraphAndCentralityInformationForDrawingInGephi("results/results.csv","results/graphVisualization/");
 
         // readCSVResultsAndStoreScoresInChart("results/results.csv", "results/charts");
-        // storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
-        // readRuntimesFromCSVStoreInChart("results/runtime/timings.csv",
-        // "results/runtime/charts/");
+        storeRuntimeOfAlgorithmsInCSV("results/runtime/timings.csv");
+        readRuntimesFromCSVStoreInChart("results/runtime/timings.csv", "results/runtime/charts/");
 
-        // generatePDFFromImage("results/runtime/charts/LineChart.png");
+        generatePDFFromImage("results/runtime/charts/chart.png");
 
-        // convertPNGtoPDF("results/runtime/charts/LineChart.png",
-        // "results/runtime/charts/");
-        // String algo = "";
-        // readCSVRuntimeResultsAndStoreInChart("results/runtime/results/" + algo,
-        // "results/runtime/charts");
-
-        // findXHighestVertices("results/results.csv",
-        // "results/highestScores/highest.csv", "DAGPageRankCentrality","jdk", 1, 3);
+        // findXHighestVertices("results/results.csv","results/highestScores/highest.csv",
+        // "DAGPageRankCentrality", "jdk", 1, 3);
 
     }
 
@@ -195,7 +188,8 @@ public class Main {
                     String graphName = column[1];
                     Integer iteration = Integer.parseInt(column[2]);
                     Integer n = Integer.parseInt(column[3]);
-                    Double timeInSeconds = Double.parseDouble(column[4]);
+                    Integer m = Integer.parseInt(column[4]);
+                    Double timeInSeconds = Double.parseDouble(column[5]);
                     // Long timeInMicro = Long.parseLong(column[4]);
 
                     if (currentAlgorithmName.equals("") && currentGraphName.equals("")) {
@@ -203,15 +197,15 @@ public class Main {
                         currentGraphName = graphName;
                     }
                     // change to m
-                    dataset.add(n, timeInSeconds);
+                    dataset.add(m, timeInSeconds);
                 }
             }
             series.addSeries(dataset);
         }
 
-        JFreeChart xyPlot = ChartFactory.createXYLineChart("runtime", "n", "time (in seconds)", series);
+        JFreeChart xyPlot = ChartFactory.createXYLineChart("", "n", "time (in seconds)", series);
         XYPlot plot = xyPlot.getXYPlot();
-        plot.setDomainAxis(new NumberAxis("n"));
+        plot.setDomainAxis(new NumberAxis("m"));
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setDefaultLinesVisible(false);
         renderer.setDefaultShapesVisible(true);
@@ -219,7 +213,7 @@ public class Main {
 
         int width = 640; /* Width of the image */
         int height = 480; /* Height of the image */
-        File runtimeChart = new File(folder + "LineChart.png");
+        File runtimeChart = new File(folder + "chart.png");
         ChartUtils.saveChartAsPNG(runtimeChart, xyPlot, width, height);
 
     }
@@ -302,11 +296,6 @@ public class Main {
 
     }
 
-    private static void readCSVRuntimeResultsAndStoreInChart(String string, String string2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'readCSVRuntimeResultsAndStoreInChart'");
-    }
-
     public static long timeAlgorithm(VertexScoringAlgorithm<Integer, BigDecimal> algorithm) {
         long startTime = System.nanoTime();
         // this method calls on compute, might be some
@@ -319,7 +308,7 @@ public class Main {
 
     private static void storeRuntimeOfAlgorithmsInCSV(String file) throws IOException {
         FileWriter writer = new FileWriter(file);
-        writer.write("algorithm,graph,iteration,vertices,time\n"); // the columns
+        writer.write("algorithm,graph,iteration,vertices,edges,time\n"); // the columns
         int numGraphs = graphs.size();
 
         if (REACH) {
@@ -328,6 +317,7 @@ public class Main {
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 VertexScoringAlgorithm centralityAlgorithm = new Reach<>(graphs.get(i), false, true);
                 int n = graphs.get(i).vertexSet().size();
+                int m = graphs.get(i).edgeSet().size();
                 // this is where the algorithm is run with .getScores
                 long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
                 double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
@@ -337,6 +327,7 @@ public class Main {
                                 + graphName + ","
                                 + DEFAULTITERATIONS + ","
                                 + n + ","
+                                + m + ","
                                 + timeElapsedSeconds + "\n");
                 writer.write(builder.toString());
             }
@@ -348,19 +339,18 @@ public class Main {
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 VertexScoringAlgorithm centralityAlgorithm = new Reach<>(graphs.get(i), false, true);
                 int n = graphs.get(i).vertexSet().size();
-
+                int m = graphs.get(i).edgeSet().size();
                 // this is where the algorithm is run with .getScores
                 long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
                 double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
                 StringBuilder builder = new StringBuilder();
-                // todo:split reach and dependency algorithm
                 builder.append(
-                        "Dependency" + ","
+                        centralityAlgorithm.getClass().getSimpleName() + ","
                                 + graphName + ","
                                 + DEFAULTITERATIONS + ","
                                 + n + ","
+                                + m + ","
                                 + timeElapsedSeconds + "\n");
-
                 writer.write(builder.toString());
             }
         }
@@ -372,19 +362,18 @@ public class Main {
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 VertexScoringAlgorithm centralityAlgorithm = new Distribution<>(graphs.get(i), MAXITERATIONS);
                 int n = graphs.get(i).vertexSet().size();
-
+                int m = graphs.get(i).edgeSet().size();
                 // this is where the algorithm is run with .getScores
                 long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
                 double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
                 StringBuilder builder = new StringBuilder();
-
                 builder.append(
                         centralityAlgorithm.getClass().getSimpleName() + ","
                                 + graphName + ","
-                                + MAXITERATIONS + ","
+                                + DEFAULTITERATIONS + ","
                                 + n + ","
+                                + m + ","
                                 + timeElapsedSeconds + "\n");
-
                 writer.write(builder.toString());
             }
         }
@@ -395,19 +384,18 @@ public class Main {
                 String graphName = path.substring(path.lastIndexOf("/") + 1).replace(".gml", "");
                 VertexScoringAlgorithm centralityAlgorithm = new SAASBetweenness<>(graphs.get(i));
                 int n = graphs.get(i).vertexSet().size();
-
+                int m = graphs.get(i).edgeSet().size();
                 // this is where the algorithm is run with .getScores
                 long timeElapsedMicro = timeAlgorithm(centralityAlgorithm) / 1000;
                 double timeElapsedSeconds = (timeElapsedMicro / 1000000.0);
                 StringBuilder builder = new StringBuilder();
-
                 builder.append(
                         centralityAlgorithm.getClass().getSimpleName() + ","
                                 + graphName + ","
-                                + MAXITERATIONS + ","
+                                + DEFAULTITERATIONS + ","
                                 + n + ","
+                                + m + ","
                                 + timeElapsedSeconds + "\n");
-
                 writer.write(builder.toString());
             }
         }

@@ -34,7 +34,7 @@ public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal>
         this.graph = graph;
         this.scores = new HashMap<>();
         this.maxIterations = maxIterations;
-        run();
+        // run();
     }
 
     @Override
@@ -47,6 +47,9 @@ public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal>
 
     @Override
     public BigDecimal getVertexScore(V v) {
+        // stupid solution, however the algorithm should run when detVertexScore is
+        // called
+        run();
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }

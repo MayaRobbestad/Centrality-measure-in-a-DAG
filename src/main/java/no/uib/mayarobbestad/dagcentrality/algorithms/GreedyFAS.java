@@ -3,7 +3,9 @@ package no.uib.mayarobbestad.dagcentrality.algorithms;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -24,7 +26,8 @@ public class GreedyFAS {
      */
     public static List<Integer> GR(Graph<Integer, DefaultEdge> g) {
         List<Integer> s1 = new ArrayList<>();
-        List<Integer> s2 = new ArrayList<>();
+        // List<Integer> s2 = new ArrayList<>();
+        Queue<Integer> s2 = new LinkedList<>();
         List<Integer> s = new ArrayList<>();
 
         Graph<Integer, DefaultEdge> copy = GraphCopy.graphCopy(g);
@@ -118,12 +121,14 @@ public class GreedyFAS {
         }
 
         int x = s1.size();
-        Collections.reverse(s2);
+        // Collections.reverse(s2);
         for (int i = 0; i < g.vertexSet().size(); i++) {
             if (i < x)
                 s.add(s1.get(i));
             else
-                s.add(s2.get(i - x));
+                s.add(s2.poll());
+            // s.add(s2.get(i - x));
+
         }
 
         return s;

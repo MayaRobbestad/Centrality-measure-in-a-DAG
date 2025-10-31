@@ -86,7 +86,7 @@ public class DegreeCentrality<V, E> implements VertexScoringAlgorithm<V, Double>
     @Override
     public Map<V, Double> getScores() {
         if (scores == null) {
-            compute();
+            run();
         }
         return Collections.unmodifiableMap(scores);
 
@@ -95,7 +95,7 @@ public class DegreeCentrality<V, E> implements VertexScoringAlgorithm<V, Double>
     /**
      * Compute the degree centrality measure for all vertices in the graph
      */
-    private void compute() {
+    private void run() {
         scores = new HashMap<>();
         for (V v : graph.vertexSet()) {
             scores.put(v, 0.0);
@@ -141,7 +141,7 @@ public class DegreeCentrality<V, E> implements VertexScoringAlgorithm<V, Double>
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
         if (scores == null) {
-            compute();
+            run();
         }
         return scores.get(v);
     }
