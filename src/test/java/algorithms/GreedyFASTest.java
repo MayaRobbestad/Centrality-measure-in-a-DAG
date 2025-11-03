@@ -15,7 +15,7 @@ import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
-import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFAS;
+import no.uib.mayarobbestad.dagcentrality.algorithms.GreedyFASHeuristic;
 import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
 
 /**
@@ -23,7 +23,7 @@ import no.uib.mayarobbestad.dagcentrality.graph.GraphBuilder;
  */
 public class GreedyFASTest {
 
-    GreedyFAS fas;
+    GreedyFASHeuristic fas;
     Graph<Integer, DefaultEdge> g;
     List<Integer> output;
     ArrayList<Integer> answers;

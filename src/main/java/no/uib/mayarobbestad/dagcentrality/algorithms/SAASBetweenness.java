@@ -47,22 +47,19 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
 
     @Override
     public Map<V, BigDecimal> getScores() {
-        if (scores == null) {
-            run();
-        }
+        run();
         return Collections.unmodifiableMap(scores);
     }
 
     @Override
     public BigDecimal getVertexScore(V v) {
-        // stupid solution, however the algorithm should run when detVertexScore is
-        // called
-        run();
-
+        // if (scores == null) {
+        // run();
+        // }
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
-        return getScores().get(v);
+        return this.scores.get(v);
     }
 
     /**
@@ -140,6 +137,9 @@ public class SAASBetweenness<V, E> implements VertexScoringAlgorithm<V, BigDecim
     private void SAASCentrality() {
         for (V s : this.sources) {
             for (V t : this.sinks) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
                 if (!dist.get(s).containsKey(t)) // t not reachable from s
                     continue;
                 for (V v : this.internal) {

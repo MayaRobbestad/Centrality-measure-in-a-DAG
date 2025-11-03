@@ -79,8 +79,8 @@ public class RandomDagGenerator {
         File file = new File(allDags);
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
-        for (int i = 1; i < 10; i++) {
-            String path = RandomDagGenerator.GenerateRandomDag(5000, i * 5000, folder);
+        for (int i = 1; i <= 10; i++) {
+            String path = RandomDagGenerator.GenerateRandomDag(200, i * 100, folder);
             writer.write(path + "\n");
         }
         writer.close();

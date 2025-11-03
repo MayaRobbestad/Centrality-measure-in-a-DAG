@@ -1,0 +1,11 @@
+algorithm,graph,iteration,vertex,score
+SAASBetweenness,jdk,0,805,852.25444
+SAASBetweenness,jdk,0,107,1057.98774
+SAASBetweenness,jdk,0,247,1109.2125
+SAASBetweenness,jdk,0,812,1169.99261
+SAASBetweenness,jdk,0,2384,1301.89749
+SAASBetweenness,jdk,0,3623,1401.95496
+SAASBetweenness,jdk,0,37,1683.72879
+SAASBetweenness,jdk,0,811,2157.39229
+SAASBetweenness,jdk,0,941,5479.3979
+SAASBetweenness,jdk,0,854,9500.06142

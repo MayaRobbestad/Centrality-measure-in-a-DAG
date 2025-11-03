@@ -1,0 +1,18 @@
+graphName,n,m,sources,sinks,singles,Network
+junit,181,311,83,16,53,Software dependencies
+jmail,282,513,119,31,62,Software dependencies
+sjbullet,309,821,119,41,44,Software dependencies
+flamingo,388,520,133,47,137,Software dependencies
+jung,532,957,235,55,110,Software dependencies
+sjung,533,960,236,55,110,Software dependencies
+colt,550,1157,412,35,30,Software dependencies
+scolt,550,1157,412,35,30,Software dependencies
+org,799,3612,397,35,83,Software dependencies
+guava,838,1078,442,66,218,Software dependencies
+jung-c,1040,2075,630,85,126,Software dependencies
+weka,2124,4844,827,98,801,Software dependencies
+java,2379,14727,1511,29,1,Software dependencies
+javax,3310,9391,1433,261,729,Software dependencies
+slucene,3471,10872,1967,229,515,Software dependencies
+jung-j,6126,50535,3912,65,6,Software dependencies
+jdk,6488,53892,4059,65,54,Software dependencies

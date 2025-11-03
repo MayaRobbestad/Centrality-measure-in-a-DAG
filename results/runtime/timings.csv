@@ -1,6 +1,0 @@
-algorithm,graph,iteration,vertices,edges,time
-SAASBetweenness,junit,0,181,216,4.1E-5
-SAASBetweenness,jmail,0,282,437,1.0E-6
-SAASBetweenness,sjbullet,0,309,436,0.0
-SAASBetweenness,flamingo,0,388,333,0.0
-SAASBetweenness,jung,0,532,0,0.0

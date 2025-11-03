@@ -18,7 +18,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 
 public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
-    private static final int MAX_ITERATIONS_DEFAULT = 100;
+    private static final int MAX_ITERATIONS_DEFAULT = 10;
 
     private int ROUNDINGNUM = 1000;
 
@@ -39,21 +39,19 @@ public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal>
 
     @Override
     public Map<V, BigDecimal> getScores() {
-        if (scores == null) {
-            run();
-        }
+        run();
         return Collections.unmodifiableMap(scores);
     }
 
     @Override
     public BigDecimal getVertexScore(V v) {
-        // stupid solution, however the algorithm should run when detVertexScore is
-        // called
-        run();
+        // if (scores == null) {
+        // run();
+        // }
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
-        return getScores().get(v);
+        return this.scores.get(v);
     }
 
     /**
@@ -109,7 +107,6 @@ public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal>
         for (int i = 1; i <= maxIterations; i++) {
 
             forwardFlow(copy, sources, totalWeight, topologicalList, weightReceivedFromAncestor);
-
             scores.putAll(totalWeight);
             for (V v : totalWeight.keySet()) {
                 totalWeight.put(v, new BigDecimal("0"));
@@ -118,6 +115,7 @@ public class Distribution<V, E> implements VertexScoringAlgorithm<V, BigDecimal>
             if (i < maxIterations) {
                 backwardFlow(copy, sources, sinks, totalWeight, weightReceivedFromAncestor);
             }
+
         }
     }
 

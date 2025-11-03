@@ -54,22 +54,19 @@ public class Reach<V, E> implements VertexScoringAlgorithm<V, BigDecimal> {
 
     @Override
     public Map<V, BigDecimal> getScores() {
-
-        if (scores.isEmpty()) {
-            run();
-        }
+        run();
         return Collections.unmodifiableMap(scores);
     }
 
     @Override
     public BigDecimal getVertexScore(V v) {
-        // stupid solution, however the algorithm should run when detVertexScore is
-        // called
-        run();
+        if (scores == null) {
+            run();
+        }
         if (!graph.containsVertex(v)) {
             throw new IllegalArgumentException("Cannot return score of unknown vertex");
         }
-        return getScores().get(v);
+        return this.scores.get(v);
     }
 
     private void run() {
